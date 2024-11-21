@@ -1,9 +1,14 @@
 <component name="libraryTable">
   <library name="xz-1.10">
     <CLASSES>
-      <root url="jar://$USER_HOME$/Downloads/xz-1.10.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/commons-lang3-3.17.0/commons-lang3-3.17.0.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Downloads/xz-java-1.10.zip!/src" />
+      <root url="jar://$USER_HOME$/Downloads/xz-java-1.10.zip!/src9" />
+      <root url="file://$USER_HOME$/Downloads/commons-lang3-3.17.0" />
+    </SOURCES>
+    <jarDirectory url="file://$USER_HOME$/Downloads/commons-lang3-3.17.0" recursive="false" type="SOURCES" />
   </library>
 </component>
