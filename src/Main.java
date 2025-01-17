@@ -12,7 +12,7 @@ import java.util.Arrays;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         //implementationTesting(args);
         //XZTesting(args);
         //LifeIsPain(args);
@@ -28,13 +28,36 @@ public class Main {
         String loremipsumzip = "loremipsum.zip";
         String loremipsum7z = "loremipsum.7z";
         String tankfolder = "tankfolder";
-        String spamcd = "spamcd.mid";
+        String spamcdmid = "spamcd.mid";
         String holygrail = "megalovania.pcm";
+        String coffinnails = "coffinnails.pcm";
+        String spamcd = "spamcd.pcm";
 
         String currFile = "stupid.midi";
 
+        //PCMParser p = new PCMParser("/Users/jacksegil/Desktop/compression/testfiles/" + "testsong2.pcm");
+
+        PCMParser pp = new PCMParser("/Users/jacksegil/Downloads/misery1.pcm", "/Users/jacksegil/Downloads/misery2.pcm");
         try {
-            CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 5);
+            pp.calculateDiffSavings();
+            //System.out.println(PCMParser.countUsedBits(10) + " " + PCMParser.countUsedBits2(-1));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        //System.out.println();
+        //p.printMaximaMinima();
+       // p.lastResort();
+        //p.printStuff();
+        //p.printTrueMaxes();
+        //p.findTrueMaxesWithBias(p.theStuff);
+        //System.out.println(p.trueNumZeros());
+        //p.findTrueMaxesWithBiasAverage(p.theStuff);
+        //System.out.println(p.calculateStandardDeviationOfMaxes());
+
+        try {
+            //CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 5);
         }
         catch (Exception e) {
             e.printStackTrace();
