@@ -36,14 +36,15 @@ public class Main {
         String currFile = "stupid.midi";
 
         //PCMParser p = new PCMParser("/Users/jacksegil/Desktop/compression/testfiles/" + "testsong2.pcm");
-
+        LRCParser l = new LRCParser("","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/misery.lrc");
+/*
         PCMParser pp = new PCMParser("/Users/jacksegil/Downloads/misery1.pcm", "/Users/jacksegil/Downloads/misery2.pcm");
         try {
             pp.calculateDiffSavings();
             //System.out.println(PCMParser.countUsedBits(10) + " " + PCMParser.countUsedBits2(-1));
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
 
         //System.out.println();
@@ -57,7 +58,7 @@ public class Main {
         //System.out.println(p.calculateStandardDeviationOfMaxes());
 
         try {
-            //CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 5);
+            CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -160,7 +161,7 @@ public class Main {
             result = new Storage(new Storage[size]);
 
 
-            ArrayList<Storage> patterns = ReplaceAllLongestRepeatingPatterns(killMe, result, 0);
+            //ArrayList<Storage> patterns = ReplaceAllLongestRepeatingPatterns(killMe, result, 0);
 
 
 
@@ -212,17 +213,24 @@ public class Main {
     public static void CommonSubpatternDevelopment(String filepath, boolean readFromFile, boolean writeToFile, int minPatternSize) throws IOException {
             File fileData = new File(filepath);
             FileInputStream inFile = new FileInputStream(filepath);
-            byte[] killMe = inFile.readAllBytes();
-
+           // byte[] killMe = inFile.readAllBytes();
+            LRCParser l = new LRCParser("","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/misery.lrc");
+            String[] killMe = l.lyrics.toArray(new String[0]);
             int size = killMe.length;
             System.out.println(size);
             //System.out.println(TheProblem(killMe, 58));
             //killMe = new byte[]{2, 5, 7, 0, 1, 3, 2, 6, 8, 9, 0, 1, 3, 5, 7 ,8, 9};
             result = new Storage(new Storage[size]);
-            double fileLength = fileData.length();
+            //double fileLength = fileData.length();
+            double fileLength = size;
+
+            //convert bytes to storage
+            for (int i = 0; i < killMe.length; i++) {
+                result.getPattern()[i] = new Storage<String>(killMe[i]);
+            }
 
             if (writeToFile) {
-                result.setSubpatterns(ReplaceAllLongestRepeatingPatterns(killMe, result, minPatternSize));
+                result.setSubpatterns(ReplaceAllLongestRepeatingPatterns(result, minPatternSize));
 
                 // Serialization code
                 try
@@ -254,7 +262,7 @@ public class Main {
             }
 
             if (!readFromFile && !writeToFile) {
-                result.setSubpatterns(ReplaceAllLongestRepeatingPatterns(killMe, result, minPatternSize));
+                result.setSubpatterns(ReplaceAllLongestRepeatingPatterns(result, minPatternSize));
             }
 
             System.out.println("Finished LRP, moving on");
@@ -274,13 +282,14 @@ public class Main {
 
             System.out.println("Before: " + fileLength + ". After: " + count);
             System.out.println("Reduced to " + ((count / fileLength) * 100) + " percent of original size");
-            byte[] resultAsByteArray = result.toByteArray();
+            System.out.println(result);
+           /* byte[] resultAsByteArray = result.toByteArray();
             for (int i = 0; i < killMe.length; i++) {
                 if (resultAsByteArray[i] != killMe[i]) {
                     System.out.println(resultAsByteArray[i] + " != " + killMe[i] + " at position " + i);
                 }
             }
-            System.out.println("Verification result " + Arrays.equals(resultAsByteArray, killMe));
+            System.out.println("Verification result " + Arrays.equals(resultAsByteArray, killMe));*/
 
     }
 
@@ -459,17 +468,13 @@ public class Main {
         return toReturn;
     }
 
-    public static ArrayList<Storage> ReplaceAllLongestRepeatingPatterns(byte[] data, Storage localResult, int minPatternSize) {
+    public static ArrayList<Storage> ReplaceAllLongestRepeatingPatterns(Storage localResult, int minPatternSize) {
         ArrayList<Storage> toReturn = new ArrayList<Storage>();
         //String curr = LongestRepeatedSubstring(dataString);
 
 
         //Storage[] dataStorage = new Storage[data.length];
 
-        //convert bytes to storage
-        for (int i = 0; i < data.length; i++) {
-            localResult.getPattern()[i] = new Storage(data[i]);
-        }
         //Storage[] curr = new Storage[0];
         Storage curr = new Storage(LongestRepeatedPattern(localResult.getPattern(), minPatternSize));
         System.out.println(Arrays.deepToString(curr.getPattern()));
@@ -568,7 +573,7 @@ public class Main {
             for (int j = i + 1; j <= n; j++) {
                 // (j-i) > LCSRe[i-1][j-1] to remove
                 // overlapping
-                if (data[i - 1].fastEquals(data[j - 1]) && LCSRe[i - 1][j - 1] < (j - i)) {
+                if (data[i - 1].fastSaferEquals(data[j - 1]) && LCSRe[i - 1][j - 1] < (j - i)) {
                     LCSRe[i][j] = (byte) (LCSRe[i - 1][j - 1] + 1);
 
                     // updating maximum length of the

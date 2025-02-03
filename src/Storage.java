@@ -3,12 +3,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class Storage implements Comparable<Storage>, Serializable {
-    private Byte data;
+public class Storage<T extends Comparable<T>> implements Comparable<Storage>, Serializable {
+    private T data;
     public Storage[] pattern;
     private ArrayList<Storage> subpatterns;
 
-    public Storage(Byte data) {
+    public Storage(T data) {
         this.data = data;
         subpatterns = null;
     }
@@ -54,6 +54,14 @@ public class Storage implements Comparable<Storage>, Serializable {
        // return o.data != null && o.data == data;
     }
 
+    public boolean fastSaferEquals(Storage o) {
+        if (!isPointer() && !o.isPointer()) {
+            return o.data.equals(data);
+        } else {
+            return false;
+        }
+    }
+
     public String toString() {
         if (isPointer()) {
             return "Pointer to " + Arrays.toString(pattern);
@@ -63,11 +71,11 @@ public class Storage implements Comparable<Storage>, Serializable {
         }
     }
 
-    public Byte getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(Byte data) {
+    public void setData(T data) {
         this.data = data;
     }
 
@@ -101,6 +109,7 @@ public class Storage implements Comparable<Storage>, Serializable {
         this.subpatterns = subpatterns;
     }
 
+    // TODO: deprecated, remove soon or figureo ut wihat to do with
     public byte[] toByteArray() {
         byte[] toReturn = new byte[trueLength()];
         int i = 0;
@@ -112,7 +121,7 @@ public class Storage implements Comparable<Storage>, Serializable {
                 writePos += curr.trueLength();
                 i++;
             } else {
-                toReturn[writePos] = curr.getData();
+                toReturn[writePos] = (byte) curr.getData();
                 i++;
                 writePos++;
             }
