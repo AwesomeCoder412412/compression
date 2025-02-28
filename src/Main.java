@@ -36,7 +36,10 @@ public class Main {
         String currFile = "stupid.midi";
 
         //PCMParser p = new PCMParser("/Users/jacksegil/Desktop/compression/testfiles/" + "testsong2.pcm");
-        LRCParser l = new LRCParser("","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/misery.lrc");
+
+        //System.out.println(Arrays.toString(l.getData("[00:02.69]", "[00:04.09]")));
+        //ArrayList<int[]> weird = l.readPCM("/Users/jacksegil/Desktop/compression/testfiles/rockafellerdupe.pcm", 24, 2);
+        //System.out.println(Arrays.toString(LongestCommonPattern(l.lyrics.get(0).getPcmData().getFirst(), l.lyrics.get(2).getPcmData().getFirst())));
 /*
         PCMParser pp = new PCMParser("/Users/jacksegil/Downloads/misery1.pcm", "/Users/jacksegil/Downloads/misery2.pcm");
         try {
@@ -57,7 +60,10 @@ public class Main {
         //p.findTrueMaxesWithBiasAverage(p.theStuff);
         //System.out.println(p.calculateStandardDeviationOfMaxes());
 
+
         try {
+           // LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/rockafeller.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/rockafeller.lrc", 32);
+            //l.compressToALS();
             CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
         }
         catch (Exception e) {
@@ -214,8 +220,10 @@ public class Main {
             File fileData = new File(filepath);
             FileInputStream inFile = new FileInputStream(filepath);
            // byte[] killMe = inFile.readAllBytes();
-            LRCParser l = new LRCParser("","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/misery.lrc");
-            String[] killMe = l.lyrics.toArray(new String[0]);
+            //LRCParser l = new LRCParser("","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/aroundtheworld.lrc", 32);
+            LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/iwonder.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/iwonder.lrc", 32, 2, 48000, "iwondermono");
+            System.out.println(l.lyrics);
+            LyricSegment[] killMe = l.lyrics.toArray(new LyricSegment[0]);
             int size = killMe.length;
             System.out.println(size);
             //System.out.println(TheProblem(killMe, 58));
@@ -226,7 +234,7 @@ public class Main {
 
             //convert bytes to storage
             for (int i = 0; i < killMe.length; i++) {
-                result.getPattern()[i] = new Storage<String>(killMe[i]);
+                result.getPattern()[i] = new Storage<LyricSegment>(killMe[i]);
             }
 
             if (writeToFile) {
@@ -283,6 +291,20 @@ public class Main {
             System.out.println("Before: " + fileLength + ". After: " + count);
             System.out.println("Reduced to " + ((count / fileLength) * 100) + " percent of original size");
             System.out.println(result);
+
+            try {
+                for (LyricSegment lyricSegment : stupidSort(l.lyrics)) {
+                    l.writeIntoWAVFiles(lyricSegment);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            System.out.println(Thread.activeCount());
+            while (Thread.activeCount() > 1) {
+                //System.out.println(Thread.activeCount());
+            }
+
            /* byte[] resultAsByteArray = result.toByteArray();
             for (int i = 0; i < killMe.length; i++) {
                 if (resultAsByteArray[i] != killMe[i]) {
@@ -292,6 +314,20 @@ public class Main {
             System.out.println("Verification result " + Arrays.equals(resultAsByteArray, killMe));*/
 
     }
+
+    public static ArrayList<LyricSegment> stupidSort(ArrayList<LyricSegment> lyrics) {
+        ArrayList<LyricSegment> toReturn = new ArrayList<>();
+        for (int i = 0; i < lyrics.size(); i++) {
+            LyricSegment currLyric  = lyrics.get(i);
+            if (toReturn.contains(currLyric)) {
+                toReturn.get(toReturn.indexOf(currLyric)).mergeLyricSegments(currLyric);
+            } else {
+                toReturn.add(currLyric);
+            }
+        }
+        return toReturn;
+    }
+
 
     public static void AfterTheFirstRun(Storage pointer, int minPatternSize) {
         ArrayList<Storage> patterns = pointer.getSubpatterns();
@@ -306,7 +342,7 @@ public class Main {
                 AfterTheFirstRun(patterns.get(i), minPatternSize);
             }
             else { //TODO: very stupid and doesn't even make a difference
-                patterns.get(i).setSubpatterns(null);
+                //patterns.get(i).setSubpatterns(null);
             }
 
         }
@@ -316,7 +352,8 @@ public class Main {
 
     public static void ReplaceAllLongestCommonPatterns(Storage pointer, int minPatternSize) {
         ArrayList<Storage> patterns = pointer.getSubpatterns();
-        patterns.add(pointer);
+       // patterns.add(new Storage (pointer.pattern));
+        patterns.addFirst(pointer);
 
         Storage curr = LongestCommonPattern(patterns, minPatternSize);
 
@@ -338,7 +375,7 @@ public class Main {
             curr = LongestCommonPattern(patterns, minPatternSize);
         }
 
-        patterns.removeLast();
+        patterns.removeFirst();
 
         pointer.setSubpatterns(patterns);
     }
@@ -406,6 +443,31 @@ public class Main {
         return S1.substring(Start, (Start + Max));
     }
 
+    public static int[] LongestCommonPattern(int[] S1, int[] S2)
+    {
+        int Start = 0;
+        int Max = 0;
+        for (int i = 0; i < S1.length; i++)
+        {
+            for (int j = 0; j < S2.length; j++)
+            {
+                int x = 0;
+                while (S1[i + x] == S2[j + x])
+                {
+                    x++;
+                    if (((i + x) >= S1.length) || ((j + x) >= S2.length)) break;
+                }
+                if (x > Max)
+                {
+                    Max = x;
+                    Start = i;
+                }
+            }
+        }
+        //return S1.substring(Start, (Start + Max));
+        return Arrays.copyOfRange(S1, Start, (Start + Max));
+    }
+
     public static Storage LongestCommonPattern(Storage S1, Storage S2)
     {
         Storage[] S1p = S1.getPattern();
@@ -440,6 +502,8 @@ public class Main {
             return new Storage(toReturn);
         }
     }
+
+
 
 
 
