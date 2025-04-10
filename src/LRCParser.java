@@ -23,11 +23,12 @@ public class LRCParser {
 
 
 
-    public LRCParser(String pcmPath, String lrcPath, int bitDepth, int numChannels, int sampleRate, String fileName) {
+    public LRCParser(String pcmPath, String lrcPath, int bitDepth, int numChannels, int initSampleRate, String fileName) {
         this.bitDepth = bitDepth;
+        sampleRate = initSampleRate;
         try {
             FileInputStream inFile = new FileInputStream(pcmPath);
-            pcmData = readPCM(pcmPath, 24, numChannels);
+            pcmData = readPCM(pcmPath, bitDepth, numChannels);
             inFile.close();
 
             FileReader input = new FileReader(lrcPath);
@@ -39,6 +40,9 @@ public class LRCParser {
 
             ArrayList<String> lyricBuilder = new ArrayList<>();
 
+            int i = 0;
+            String mostRecentTimestamp = "";
+
             while ( (myLine = bufRead.readLine()) != null)
             {
                 String[] lineContents = myLine.split("]");
@@ -47,7 +51,19 @@ public class LRCParser {
                     lineContents = new String[] {lineContents[0], "SILENCE"};
                 }
 
+
+                if (i == 0 && lineContents.length > 1 && !lineContents[0].equals("[00:00.00")) {
+                    lyrics.add(new LyricSegment("SILENCE", getData("[00:00.00",lineContents[0])));
+                    i++;
+                } else {
+                    i++;
+                }
+
+
                 for (String s : lineContents) {
+                    if (s.charAt(0) == '[') {
+                        mostRecentTimestamp = s;
+                    }
                     lyricBuilder.add(s);
                     if (lyricBuilder.size() == 3) {
                         lyrics.add(new LyricSegment(lyricBuilder.get(1), getData(lyricBuilder.get(0), s)));
@@ -57,14 +73,19 @@ public class LRCParser {
                 }
 
             }
-            lyrics.add(new LyricSegment("SILENCE", getData(lyricBuilder.getFirst(), pcmData.getFirst().length)));
+            if (lyricBuilder.size() == 2) { // if we end on a lyric without an end timestamp
+                lyrics.add(new LyricSegment(lyricBuilder.get(1), getData(mostRecentTimestamp, pcmData.getFirst().length)));
+            } else if (numSeconds(mostRecentTimestamp) * sampleRate < pcmData.getFirst().length) { //if the last timestamp doens't go all the way to the end of the song
+                lyrics.add(new LyricSegment("SILENCE", getData(lyricBuilder.getFirst(), pcmData.getFirst().length)));
+            }
 
             bufRead.close();
 
-            this.fileName = fileName;
-            this.sampleRate = sampleRate;
 
-            //writeWAV(pcmData, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + ".wav", bitDepth, numChannels);
+
+            this.fileName = fileName;
+
+            writeWAV(pcmData, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + ".wav", bitDepth, numChannels);
 
 
         } catch (Exception e) {
@@ -386,82 +407,6 @@ public class LRCParser {
     }
 
 
-
-}
-
-class WavWriterThread implements Runnable {
-
-    private final ArrayList<int[]> channels;
-    private final String outputPath;
-    private final int bitDepth;
-    private final int numChannels;
-    private final int sampleRate;
-
-    public WavWriterThread(ArrayList<int[]> channels, String outputPath, int bitDepth, int numChannels, int sampleRate) {
-        this.channels = channels;
-        this.outputPath = outputPath;
-        this.bitDepth = bitDepth;
-        this.numChannels = numChannels;
-        this.sampleRate = sampleRate;
-    }
-
-    @Override
-    public void run() {
-        try {
-            AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(channels, bitDepth, numChannels)), new AudioFormat(sampleRate, bitDepth, numChannels, true, false), channels.getFirst().length);
-            FileOutputStream fileOut = new FileOutputStream(outputPath);
-            AudioSystem.write(stream, AudioFileFormat.Type.WAVE, fileOut);
-            fileOut.close();
-
-
-            AudioInputStream stream2 = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(channels, bitDepth, numChannels)), new AudioFormat(sampleRate, bitDepth, numChannels, true, false), channels.getFirst().length);
-            FileOutputStream fileOut2 = new FileOutputStream(outputPath.replaceFirst(".wav", "") + "_nc.wav");
-            AudioSystem.write(stream2, AudioFileFormat.Type.WAVE, fileOut2);
-            fileOut2.close();
-
-            ProcessBuilder pb = new ProcessBuilder("/Users/jacksegil/Downloads/mp4alsRM23/bin/mac/mp4alsRM23", "-t" + numChannels, "-7", outputPath);
-            Process p = pb.start();
-            p.waitFor();
-            ProcessBuilder pbnc = new ProcessBuilder("/Users/jacksegil/Downloads/mp4alsRM23/bin/mac/mp4alsRM23", "-7", outputPath.replaceFirst(".wav", "") + "_nc.wav");
-            //System.out.println("/Users/jacksegil/Downloads/mp4alsRM23/bin/mac/mp4alsRM23 -7" + " " +  outputPath.replaceFirst(".wav", "") + "_nc.wav");
-            //System.out.println(outputPath.replaceFirst(".wav", "") + "_nc.wav");
-
-            pb.directory(new File(System.getProperty("user.home")));
-            pbnc.directory(new File(System.getProperty("user.home")));
-            Process pnc = pbnc.start();
-            try(var stdout = pnc.getInputStream()) {
-                stdout.transferTo(System.out);
-            }
-            //System.out.println(pnc.isAlive());
-            pnc.waitFor();
-           // System.out.println(pnc.isAlive());
-            Files.delete(Paths.get(outputPath));
-            Files.delete(Paths.get(outputPath.replaceFirst(".wav", "") + "_nc.wav"));
-
-            String alsPath = outputPath.replaceFirst("wav", "als");
-
-            String alsPathNC = outputPath.replaceFirst(".wav", "") + "_nc.als";
-
-
-//            while(!Files.exists(Paths.get(alsPathNC))) {
-//
-//            }
-
-            //System.out.println(Files.exists(Paths.get(alsPathNC)));
-            int c = Files.readAllBytes(Paths.get(alsPath)).length;
-            int nc = Files.readAllBytes(Paths.get(alsPathNC)).length;
-            System.out.println("compression savings of " + (nc-c) + " bytes");
-            if (c >= nc) {
-                Files.delete(Paths.get(alsPath));
-            } else {
-                Files.delete(Paths.get(alsPathNC));
-            }
-
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 }
 

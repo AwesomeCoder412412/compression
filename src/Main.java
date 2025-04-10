@@ -5,6 +5,14 @@ import java.io.*;
 import XZ.lz.*;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -216,16 +224,27 @@ public class Main {
 
     }
 
-    public static void CommonSubpatternDevelopment(String filepath, boolean readFromFile, boolean writeToFile, int minPatternSize) throws IOException {
+    public static void CommonSubpatternDevelopment(String filepath, boolean readFromFile, boolean writeToFile, int minPatternSize) throws IOException, InvalidMidiDataException, MidiUnavailableException, InterruptedException {
             File fileData = new File(filepath);
             FileInputStream inFile = new FileInputStream(filepath);
            // byte[] killMe = inFile.readAllBytes();
             //LRCParser l = new LRCParser("","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/aroundtheworld.lrc", 32);
-            LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/iwonder.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/iwonder.lrc", 32, 2, 48000, "iwondermono");
+            /*LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/misery.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/misery.lrc", 16, 2, 44100, "misery");
             System.out.println(l.lyrics);
             LyricSegment[] killMe = l.lyrics.toArray(new LyricSegment[0]);
             int size = killMe.length;
-            System.out.println(size);
+            System.out.println(size);*/
+
+            MidiParser m = new MidiParser("/Users/jacksegil/Desktop/compression/testfiles/oneday.raw", 24, 2, 44100, "oneday", false);
+            ArrayList<MidiSegment> segments = m.theStuff("/Users/jacksegil/Downloads/oneday.mid");
+
+           // ArrayList<String[]> tableOfContents = MidiParser.parseMidiFile("/Users/jacksegil/Downloads/mega.mid");
+
+            MidiSegment[] midiSegments = segments.toArray(new MidiSegment[0]);
+            int size = midiSegments.length;
+
+            /* TODO: UNCOMMENT WHEN USEFUL
+
             //System.out.println(TheProblem(killMe, 58));
             //killMe = new byte[]{2, 5, 7, 0, 1, 3, 2, 6, 8, 9, 0, 1, 3, 5, 7 ,8, 9};
             result = new Storage(new Storage[size]);
@@ -233,8 +252,8 @@ public class Main {
             double fileLength = size;
 
             //convert bytes to storage
-            for (int i = 0; i < killMe.length; i++) {
-                result.getPattern()[i] = new Storage<LyricSegment>(killMe[i]);
+            for (int i = 0; i < midiSegments.length; i++) {
+                result.getPattern()[i] = new Storage<MidiSegment>(midiSegments[i]);
             }
 
             if (writeToFile) {
@@ -290,17 +309,84 @@ public class Main {
 
             System.out.println("Before: " + fileLength + ". After: " + count);
             System.out.println("Reduced to " + ((count / fileLength) * 100) + " percent of original size");
-            System.out.println(result);
+            System.out.println(result); TODO: end big uncomment */
 
+
+
+
+ /* // UNCOMMENT FOR LRC
             try {
                 for (LyricSegment lyricSegment : stupidSort(l.lyrics)) {
                     l.writeIntoWAVFiles(lyricSegment);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-            }
+            }*/
 
-            System.out.println(Thread.activeCount());
+            /*System.out.println(Thread.activeCount());
+            System.out.println(Arrays.toString(LongestCommonPattern(segments.get(0).data.get(1), ((MidiSegment) result.getPattern()[1].getData()).data.get(1))));
+        System.out.println(LongestCommonPattern(((MidiSegment) result.getPattern()[0].getData()).data.get(1), ((MidiSegment) result.getPattern()[1].getData()).data.get(1)).length);
+            System.out.println(((MidiSegment) result.getPattern()[1].getData()).data.getFirst().length);*/
+
+
+
+        try {
+            for (SegmentContainer container : stupidSort2(segments)) {
+
+                ArrayList<MidiSegment> instances = container.segments;
+                int partNumber = 0;
+                while (!instances.isEmpty()) {
+
+                    SegmentContainer firstHalves = new SegmentContainer(container.segments.getFirst());
+                    SegmentContainer secondHalves = new SegmentContainer(container.segments.getFirst());
+
+                    int length = MidiParser.getSmallestLength(container.rawData());
+                    for (MidiSegment instance : instances) {
+                        ArrayList<int[]> tempList  = new ArrayList<int[]>();
+                        tempList.add(Arrays.copyOfRange(instance.data.getFirst(), 0, length));
+                        firstHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
+                        if (length < instance.data.getFirst().length) {
+                            tempList.removeFirst(); //TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
+                            tempList.add(Arrays.copyOfRange(instance.data.getFirst(), length, instance.data.getFirst().length));
+                            secondHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
+                        }
+                    }
+
+                    //writeWAV(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwonder/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
+                    //writeWAVNoCompression(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwondern/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
+
+                   // Thread.startVirtualThread(new WavWriterThread(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + midiSegment.notes + partNumber + ".wav", bitDepth, instances.size(), sampleRate));
+
+
+                    for (MidiSegment segment : firstHalves.segments) { //assumes firstHalves is a container containing midisegments compeltely ready for writing (outside of the lengthSplit value, which will be set here) , this loop updates the order refernence segment array for encoding purposees
+                        MidiSegment segmentToSearchFor = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, segment.index); // only index, channel, and notes are used for comparsion
+                        segmentToSearchFor.lengthSplit = partNumber - 1; //non-lengthsplit segments should have a lengthSplit of zero
+
+
+                        int indexOfLatestSplit = segments.indexOf(segmentToSearchFor);
+
+                        segment.lengthSplit = partNumber;
+                        segments.add(indexOfLatestSplit + 1, segment);
+
+
+                    }
+
+
+                    instances = secondHalves.segments;
+                    partNumber++;
+
+                    m.writeIntoWAVFiles(firstHalves);
+                }
+
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+         //  writeWAV(((MidiSegment) result.getPattern()[0].getData()).data, 44100, "/Users/jacksegil/Downloads/onebomb.wav", 24, 2);
+      // writeWAV(((MidiSegment) result.getPattern()[1].getData()).data, 44100, "/Users/jacksegil/Downloads/twobomb.wav", 24, 2);
             while (Thread.activeCount() > 1) {
                 //System.out.println(Thread.activeCount());
             }
@@ -315,6 +401,21 @@ public class Main {
 
     }
 
+    public static void writeWAV(ArrayList<int[]> channels, int sampleRate, String outputPath, int bitDepth, int numChannels) throws IOException, InterruptedException {
+        AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(channels, bitDepth, numChannels)), new AudioFormat(sampleRate, bitDepth, numChannels, true, false), channels.getFirst().length);
+
+        FileOutputStream fileOut = new FileOutputStream(outputPath);
+        AudioSystem.write(stream, AudioFileFormat.Type.WAVE, fileOut);
+        fileOut.close();
+        ProcessBuilder pb = new ProcessBuilder("/Users/jacksegil/Downloads/mp4alsRM23/bin/mac/mp4alsRM23", "-t" + numChannels, "-7", outputPath);
+        pb.directory(new File(System.getProperty("user.home")));
+        Process p = pb.start();
+        p.waitFor();
+        Files.delete(Paths.get(outputPath));
+    }
+
+
+
     public static ArrayList<LyricSegment> stupidSort(ArrayList<LyricSegment> lyrics) {
         ArrayList<LyricSegment> toReturn = new ArrayList<>();
         for (int i = 0; i < lyrics.size(); i++) {
@@ -323,6 +424,36 @@ public class Main {
                 toReturn.get(toReturn.indexOf(currLyric)).mergeLyricSegments(currLyric);
             } else {
                 toReturn.add(currLyric);
+            }
+        }
+
+        return toReturn;
+    }
+
+    public static ArrayList<SegmentContainer> stupidSort2(ArrayList<MidiSegment> segments) {
+        ArrayList<SegmentContainer> toReturn = new ArrayList<>();
+        for (int i = 0; i < segments.size(); i++) {
+            MidiSegment currSegment  = segments.get(i);
+            SegmentContainer container = new SegmentContainer(currSegment);
+            if (toReturn.contains(container)) {
+                toReturn.get(toReturn.indexOf(container)).addMidiSegment(currSegment);
+            } else {
+                toReturn.add(container);
+            }
+        }
+
+        int divisor = 2;
+        for (int i = 0; i < toReturn.size(); i++) {
+            SegmentContainer currContainer = toReturn.get(i);
+            int quarter = currContainer.size() / divisor; // change name, not really a quarter
+
+            if (currContainer.size() > 200) {
+                for (int k = 0 ; k < divisor ; k++) {// TODO: standardize numbers, figure out a way to include a part number even if not needed so can reliabiliy know position of each signigifant end digit
+                    SegmentContainer toAdd = new SegmentContainer(new ArrayList<>(currContainer.segments.subList(k * quarter, (k + 1) * quarter)), k);
+                    toReturn.add(toAdd);
+                }
+                toReturn.remove(i);
+                i--;
             }
         }
         return toReturn;
