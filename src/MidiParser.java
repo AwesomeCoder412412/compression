@@ -10,6 +10,7 @@ public class MidiParser {
 
     private static ArrayList<int[]> pcmData;
     public ArrayList<MidiSegment> segments;
+    public ArrayList<MidiSegment> segments1;
     private static int sampleRate;
     private int bitDepth;
     private String fileName;
@@ -118,7 +119,8 @@ public class MidiParser {
     private static String generateNoteIdentifier(Set<String> notes) {
         List<String> sortedNotes = new ArrayList<>(notes);
         Collections.sort(sortedNotes);
-        return "Notes: " + sortedNotes.toString();
+        //return "Notes: " + sortedNotes.toString();
+        return sortedNotes.toString().replace(" ", "").replace("[", "").replace("]", "").replace(",", "").replace("-T","");
     }
 
     public ArrayList<int[]> readPCM(String filePath, int bitDepth, int numChannels) throws IOException {
@@ -270,17 +272,18 @@ public class MidiParser {
     public ArrayList<MidiSegment> theStuff(String filePath) {
         try {
             segments = new ArrayList<>();
+            segments1 = new ArrayList<>();
             ArrayList<String[]> tableOfContents = parseMidiFile(filePath);
             for (int i = 0; i < tableOfContents.size() - 1; i++) {
                 String[] entry = tableOfContents.get(i);
                 String[] nextEntry = tableOfContents.get(i + 1);
-                segments.add(new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2] + 0, getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 0), i)); // i = place
-                segments.add(new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2] + 1, getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 1), i));
+                segments.add(new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2] + 0, getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 0), 0, i)); // i = place
+                segments1.add(new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2] + 1, getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 1), 1, i));
                 System.out.println("Start: " + entry[0] + ", End: " + entry[1] + ", Duration: " + (Long.parseLong(entry[1]) - Long.parseLong(entry[0])) +  ", Identifier: " + entry[2]);
             }
             String[] entry = tableOfContents.getLast();
-            segments.add(new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2] + 0, getDataToEndMono(Long.parseLong(entry[0]), 0), tableOfContents.size() - 1));
-            segments.add(new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2] + 1, getDataToEndMono(Long.parseLong(entry[0]), 1), tableOfContents.size() - 1));
+            segments.add(new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2] + 0, getDataToEndMono(Long.parseLong(entry[0]), 0), 0, tableOfContents.size() - 1));
+            segments1.add(new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2] + 1, getDataToEndMono(Long.parseLong(entry[0]), 1), 1,tableOfContents.size() - 1));
             System.out.println("Start: " + entry[0] + ", End: " + entry[1] + ", Duration: " + (Long.parseLong(entry[1]) - Long.parseLong(entry[0])) +  ", Identifier: " + entry[2]);
         } catch (Exception e) {
             e.printStackTrace();
@@ -306,28 +309,13 @@ public class MidiParser {
             Files.createDirectory(Paths.get("/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/"));
         }
 
-        ArrayList<int[]> instances = midiSegment.data;
-        int partNumber = 0;
-        while (!instances.isEmpty()) {
-            ArrayList<int[]> secondHalves = new ArrayList<>();
-            ArrayList<int[]> firstHalves = new ArrayList<>();
-            int length = getSmallestLength(instances);
-            for (int[] instance : instances) {
-                firstHalves.add(Arrays.copyOfRange(instance, 0, length));
-                if (length < instance.length) {
-                    secondHalves.add(Arrays.copyOfRange(instance, length, instance.length));
-                }
-            }
+        String outputPath = "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + container.notes + "l" + container.getLengthSplit() + "p" + container.getPerfSplit() + ".wav";
+        //Thread.startVirtualThread(new WavWriterThread(container.rawData(), outputPath, bitDepth, container.size(), sampleRate));
 
-            //writeWAV(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwonder/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
-            //writeWAVNoCompression(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwondern/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
+    }
 
-            Thread.startVirtualThread(new WavWriterThread(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + midiSegment.notes + partNumber + ".wav", bitDepth, instances.size(), sampleRate));
-
-
-            instances = secondHalves;
-            partNumber++;
-        }
+    public String segmentEntry(MidiSegment segment) {
+        return segment.notes + "l" + segment.lengthSplit + "p" + segment.perfSplit + "i" + segment.index;
     }
 
     public static int getSmallestLength(ArrayList<int[]> instances) {

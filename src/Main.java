@@ -237,8 +237,9 @@ public class Main {
 
             MidiParser m = new MidiParser("/Users/jacksegil/Desktop/compression/testfiles/oneday.raw", 24, 2, 44100, "oneday", false);
             ArrayList<MidiSegment> segments = m.theStuff("/Users/jacksegil/Downloads/oneday.mid");
+            ArrayList<MidiSegment> segments1 = m.segments1;
 
-           // ArrayList<String[]> tableOfContents = MidiParser.parseMidiFile("/Users/jacksegil/Downloads/mega.mid");
+        // ArrayList<String[]> tableOfContents = MidiParser.parseMidiFile("/Users/jacksegil/Downloads/mega.mid");
 
             MidiSegment[] midiSegments = segments.toArray(new MidiSegment[0]);
             int size = midiSegments.length;
@@ -331,64 +332,47 @@ public class Main {
 
 
         try {
-            for (SegmentContainer container : stupidSort2(segments)) {
-
-                ArrayList<MidiSegment> instances = container.segments;
-                int partNumber = 0;
-                while (!instances.isEmpty()) {
-
-                    SegmentContainer firstHalves = new SegmentContainer(container.segments.getFirst());
-                    SegmentContainer secondHalves = new SegmentContainer(container.segments.getFirst());
-
-                    int length = MidiParser.getSmallestLength(container.rawData());
-                    for (MidiSegment instance : instances) {
-                        ArrayList<int[]> tempList  = new ArrayList<int[]>();
-                        tempList.add(Arrays.copyOfRange(instance.data.getFirst(), 0, length));
-                        firstHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
-                        if (length < instance.data.getFirst().length) {
-                            tempList.removeFirst(); //TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
-                            tempList.add(Arrays.copyOfRange(instance.data.getFirst(), length, instance.data.getFirst().length));
-                            secondHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
-                        }
-                    }
-
-                    //writeWAV(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwonder/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
-                    //writeWAVNoCompression(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwondern/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
-
-                   // Thread.startVirtualThread(new WavWriterThread(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + midiSegment.notes + partNumber + ".wav", bitDepth, instances.size(), sampleRate));
-
-
-                    for (MidiSegment segment : firstHalves.segments) { //assumes firstHalves is a container containing midisegments compeltely ready for writing (outside of the lengthSplit value, which will be set here) , this loop updates the order refernence segment array for encoding purposees
-                        MidiSegment segmentToSearchFor = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, segment.index); // only index, channel, and notes are used for comparsion
-                        segmentToSearchFor.lengthSplit = partNumber - 1; //non-lengthsplit segments should have a lengthSplit of zero
-
-
-                        int indexOfLatestSplit = segments.indexOf(segmentToSearchFor);
-
-                        segment.lengthSplit = partNumber;
-                        segments.add(indexOfLatestSplit + 1, segment);
-
-
-                    }
-
-
-                    instances = secondHalves.segments;
-                    partNumber++;
-
-                    m.writeIntoWAVFiles(firstHalves);
-                }
-
-
-            }
+            var sortedSegments = stupidSort2(segments);
+            var sortedSegments1 = stupidSort2(segments1);
+            SliceSegments(m, segments, sortedSegments);
+            SliceSegments(m, segments1, sortedSegments1);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        try {
+            File map = new File("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + "mapfirstchannel.txt");
+            FileWriter myWriter = new FileWriter(map);
 
-         //  writeWAV(((MidiSegment) result.getPattern()[0].getData()).data, 44100, "/Users/jacksegil/Downloads/onebomb.wav", 24, 2);
+            for (int i = 0; i < segments.size(); i++) {
+                myWriter.write(m.segmentEntry(segments.get(i)) + "\n");
+                //myWriter.write(m.segmentEntry(segments1.get(i)) + "\n");
+            }
+            myWriter.close();
+
+             map = new File("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + "mapsecondchannel.txt");
+            myWriter = new FileWriter(map);
+
+            for (int i = 0; i < segments1.size(); i++) {
+                //myWriter.write(m.segmentEntry(segments.get(i)) + "\n");
+                myWriter.write(m.segmentEntry(segments1.get(i)) + "\n");
+            }
+
+            myWriter.close();
+            System.out.println("Successfully wrote to the file.");
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+
+            //  writeWAV(((MidiSegment) result.getPattern()[0].getData()).data, 44100, "/Users/jacksegil/Downloads/onebomb.wav", 24, 2);
       // writeWAV(((MidiSegment) result.getPattern()[1].getData()).data, 44100, "/Users/jacksegil/Downloads/twobomb.wav", 24, 2);
+
+
+
+
             while (Thread.activeCount() > 1) {
-                //System.out.println(Thread.activeCount());
+                System.out.println(Thread.activeCount());
             }
 
            /* byte[] resultAsByteArray = result.toByteArray();
@@ -399,6 +383,70 @@ public class Main {
             }
             System.out.println("Verification result " + Arrays.equals(resultAsByteArray, killMe));*/
 
+    }
+
+    private static void SliceSegments(MidiParser m, ArrayList<MidiSegment> segments, ArrayList<SegmentContainer> sortedSegments) throws IOException, InterruptedException {
+        for (SegmentContainer container : sortedSegments) {
+
+            ArrayList<MidiSegment> instances = container.segments;
+            int partNumber = 1;
+            while (!instances.isEmpty()) {
+
+                SegmentContainer firstHalves = new SegmentContainer(container.segments.getFirst());
+                // System.out.println(segments.indexOf(container.segments.getFirst()));
+                SegmentContainer secondHalves = new SegmentContainer(container.segments.getFirst());
+                firstHalves.setLengthSplit(partNumber);
+                secondHalves.setLengthSplit(partNumber);
+
+                int length = MidiParser.getSmallestLength(container.rawData());
+                for (MidiSegment instance : instances) {
+                    ArrayList<int[]> tempList  = new ArrayList<int[]>();
+                    tempList.add(Arrays.copyOfRange(instance.data.getFirst(), 0, length));
+                    firstHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
+                    if (length < instance.data.getFirst().length) {
+                        tempList.removeFirst(); //TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
+                        tempList.add(Arrays.copyOfRange(instance.data.getFirst(), length, instance.data.getFirst().length));
+                        secondHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
+                    }
+                }
+
+                //writeWAV(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwonder/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
+                //writeWAVNoCompression(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwondern/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
+
+                // Thread.startVirtualThread(new WavWriterThread(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + midiSegment.notes + partNumber + ".wav", bitDepth, instances.size(), sampleRate));
+
+
+                int position = 0;
+                for (MidiSegment segment : firstHalves.segments) { //assumes firstHalves is a container containing midisegments compeltely ready for writing (outside of the lengthSplit value, which will be set here) , this loop updates the order refernence segment array for encoding purposees
+                    MidiSegment segmentToSearchFor = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, segment.index); // only index, channel, and notes are used for comparsion
+                    segmentToSearchFor.lengthSplit = partNumber - 1; //non-lengthsplit segments should have a lengthSplit of zero
+
+
+
+                    segmentToSearchFor = instances.get(position);
+                    int indexOfLatestSplit = segments.indexOf(segmentToSearchFor);
+
+
+
+                        segment.lengthSplit = partNumber;
+                        if (partNumber == 1) {
+                            segments.set(indexOfLatestSplit, segment);
+                        } else {
+                            segments.add(indexOfLatestSplit + 1, segment);
+                        }
+
+                    position++;
+                }
+
+
+                instances = secondHalves.segments;
+                partNumber++;
+
+                m.writeIntoWAVFiles(firstHalves);
+            }
+
+
+        }
     }
 
     public static void writeWAV(ArrayList<int[]> channels, int sampleRate, String outputPath, int bitDepth, int numChannels) throws IOException, InterruptedException {

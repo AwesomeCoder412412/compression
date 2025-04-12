@@ -6,6 +6,10 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
     String notes;
     final int channel;
 
+
+    private int lengthSplit;
+    private int perfSplit;
+
     public int getPerfSplit() {
         return perfSplit;
     }
@@ -17,7 +21,19 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         }
     }
 
-    private int perfSplit;
+    public int getLengthSplit() {
+        return lengthSplit;
+    }
+
+
+    public void setLengthSplit(int lengthSplit) {
+        this.lengthSplit = lengthSplit;
+        for (int i = 0; i < segments.size(); i++) {
+            segments.get(i).lengthSplit = lengthSplit;
+        }
+    }
+
+
 
     public SegmentContainer(MidiSegment segment)  {
         segments = new ArrayList<>();
@@ -25,6 +41,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         channel = segment.channel;
         setPerfSplit(segment.perfSplit);
         segment.index = 0;
+        lengthSplit = segment.lengthSplit;
     }
 
     public SegmentContainer(ArrayList<MidiSegment> segments, int perfSplit)  {
@@ -32,6 +49,14 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         notes = segments.getFirst().notes;
         channel = segments.getFirst().channel;
         setPerfSplit(perfSplit);
+    }
+
+    public SegmentContainer(ArrayList<MidiSegment> segments, int lengthSplit, boolean stupid)  { //TODO: kill stupid
+        this.segments = segments;
+        notes = segments.getFirst().notes;
+        channel = segments.getFirst().channel;
+        setPerfSplit(segments.getFirst().perfSplit);
+        setLengthSplit(lengthSplit);
     }
 
     public SegmentContainer[] split() {
@@ -51,6 +76,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
     public void addMidiSegment(MidiSegment segment) {
         segments.add(segment);
         segment.index = segments.size() - 1;
+        segment.lengthSplit = lengthSplit;
     }
 
 
