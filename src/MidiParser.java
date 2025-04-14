@@ -310,7 +310,7 @@ public class MidiParser {
         }
 
         String outputPath = "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + container.notes + "l" + container.getLengthSplit() + "p" + container.getPerfSplit() + ".wav";
-        //Thread.startVirtualThread(new WavWriterThread(container.rawData(), outputPath, bitDepth, container.size(), sampleRate));
+        Thread.startVirtualThread(new WavWriterThread(container.rawData(), outputPath, bitDepth, container.size(), sampleRate));
 
     }
 

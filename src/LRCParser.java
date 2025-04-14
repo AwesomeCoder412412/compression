@@ -313,7 +313,7 @@ public class LRCParser {
         Files.write(Paths.get(outputPath), buffer.array());
     }
 
-    private static boolean checkLengthEquality (ArrayList<int[]> channels) {
+    public static boolean checkLengthEquality (ArrayList<int[]> channels) {
         int testLength = channels.getFirst().length;
         for (int i = 0; i < channels.size(); i++) {
             if (channels.get(i).length != testLength) {
@@ -325,7 +325,7 @@ public class LRCParser {
 
     public static byte[] writePCMToByteArray(ArrayList<int[]> channels, int bitDepth, int numChannels) throws IOException {
         if (!checkLengthEquality(channels)) {
-            throw new IllegalArgumentException("All channels need to have the same length!");
+            throw new IllegalArgumentException("All channels need to have the same length! " + numChannels);
         }
 
         int samplesPerChannel = channels.get(0).length;

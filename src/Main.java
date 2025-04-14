@@ -371,8 +371,8 @@ public class Main {
 
 
 
-            while (Thread.activeCount() > 1) {
-                System.out.println(Thread.activeCount());
+            while (ThreadManager.activeThreads > 0) {
+                //System.out.println(ThreadManager.activeThreads);
             }
 
            /* byte[] resultAsByteArray = result.toByteArray();
@@ -398,15 +398,20 @@ public class Main {
                 firstHalves.setLengthSplit(partNumber);
                 secondHalves.setLengthSplit(partNumber);
 
-                int length = MidiParser.getSmallestLength(container.rawData());
+                ArrayList<int[]> data = new ArrayList<>();
+                for (MidiSegment seg : instances) {
+                    data.addAll(seg.data);
+                }
+
+                int length = MidiParser.getSmallestLength(data);
                 for (MidiSegment instance : instances) {
                     ArrayList<int[]> tempList  = new ArrayList<int[]>();
                     tempList.add(Arrays.copyOfRange(instance.data.getFirst(), 0, length));
                     firstHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
                     if (length < instance.data.getFirst().length) {
-                        tempList.removeFirst(); //TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
-                        tempList.add(Arrays.copyOfRange(instance.data.getFirst(), length, instance.data.getFirst().length));
-                        secondHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
+                        ArrayList<int[]> tempList2  = new ArrayList<int[]>();//TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
+                        tempList2.add(Arrays.copyOfRange(instance.data.getFirst(), length, instance.data.getFirst().length));
+                        secondHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList2, instance.channel));
                     }
                 }
 
