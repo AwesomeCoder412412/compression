@@ -90,7 +90,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SegmentContainer that = (SegmentContainer) o;
-        return Objects.equals(notes, that.notes);
+        return Objects.equals(notes, that.notes) && Objects.equals(perfSplit, that.perfSplit);
     }
 
     @Override

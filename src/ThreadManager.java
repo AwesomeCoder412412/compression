@@ -1,3 +1,6 @@
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class ThreadManager {
-    public static int activeThreads = 0;
+    public static AtomicInteger threadCounter = new AtomicInteger(0);
+
 }

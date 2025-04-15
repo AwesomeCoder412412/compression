@@ -25,9 +25,11 @@ public class WavWriterThread implements Runnable {
         this.sampleRate = sampleRate;
     }
 
+
+
     @Override
     public void run() {
-        ThreadManager.activeThreads++;
+        ThreadManager.threadCounter.incrementAndGet();
         try {
             AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(channels, bitDepth, numChannels)), new AudioFormat(sampleRate, bitDepth, numChannels, true, false), channels.getFirst().length);
             FileOutputStream fileOut = new FileOutputStream(outputPath);
@@ -78,9 +80,7 @@ public class WavWriterThread implements Runnable {
             if (outputPath.equals("/Users/jacksegil/Desktop/compression/testfiles/oneday/60101l6p1.wav")) {
                 System.out.println("deleted the problem file");
             }
-            while (!Paths.get(outputPath).toFile().exists()) {
 
-            }
             Files.delete(Paths.get(outputPath));
             Files.delete(Paths.get(outputPath.replaceFirst(".wav", "") + "_nc.wav"));
             //Files.delete(Paths.get(outputPath.replaceFirst(".wav", "") + "_s.wav"));
@@ -129,7 +129,7 @@ public class WavWriterThread implements Runnable {
         catch (Exception e) {
             e.printStackTrace();
         }
-        ThreadManager.activeThreads--;
+        ThreadManager.threadCounter.decrementAndGet();
     }
 
 }

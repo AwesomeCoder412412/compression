@@ -14,6 +14,7 @@ public class MidiParser {
     private static int sampleRate;
     private int bitDepth;
     private String fileName;
+    public ArrayList<String> registry;
 
     public MidiParser(String pcmPath, int bitDepth, int numChannels, int initSampleRate, String fileName, boolean processOG) throws IOException, InterruptedException {
         this.bitDepth = bitDepth;
@@ -30,6 +31,7 @@ public class MidiParser {
         if (processOG) {
             Main.writeWAV(pcmData, sampleRate, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + ".wav", bitDepth, numChannels);
         }
+        registry = new ArrayList<>();
     }
 
 
@@ -310,6 +312,14 @@ public class MidiParser {
         }
 
         String outputPath = "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + container.notes + "l" + container.getLengthSplit() + "p" + container.getPerfSplit() + ".wav";
+        if (outputPath.equals("/Users/jacksegil/Desktop/compression/testfiles/oneday/60100l1p0.wav")) {
+            System.out.println("Writing to " + outputPath);
+        }
+        if (registry.contains(outputPath)) {
+            throw new IllegalArgumentException("why the hell are we writing this file twice? " + outputPath);
+        } else {
+            registry.add(outputPath);
+        }
         Thread.startVirtualThread(new WavWriterThread(container.rawData(), outputPath, bitDepth, container.size(), sampleRate));
 
     }

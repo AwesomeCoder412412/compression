@@ -371,8 +371,13 @@ public class Main {
 
 
 
-            while (ThreadManager.activeThreads > 0) {
-                //System.out.println(ThreadManager.activeThreads);
+            int currValue = ThreadManager.threadCounter.get();
+            while (currValue > 0) {
+                int temp = ThreadManager.threadCounter.get();
+               if (temp != currValue) {
+                   System.out.println("We have " + currValue + " threads left");
+               }
+               currValue = temp;
             }
 
            /* byte[] resultAsByteArray = result.toByteArray();
@@ -385,7 +390,10 @@ public class Main {
 
     }
 
-    private static void SliceSegments(MidiParser m, ArrayList<MidiSegment> segments, ArrayList<SegmentContainer> sortedSegments) throws IOException, InterruptedException {
+    private static void SliceSegments(MidiParser m, ArrayList<MidiSegment> segments, ArrayList<SegmentContainer> sortedSegments) throws Exception {
+
+        ArrayList<String> registry = new ArrayList<>();
+        int iteration = 0;
         for (SegmentContainer container : sortedSegments) {
 
             ArrayList<MidiSegment> instances = container.segments;
@@ -432,12 +440,18 @@ public class Main {
                     int indexOfLatestSplit = segments.indexOf(segmentToSearchFor);
 
 
-
-                        segment.lengthSplit = partNumber;
+                        MidiSegment segmentToAdd = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, segment.index);
+                        segmentToAdd.lengthSplit = partNumber;
+                      /*  if (segments.contains(segmentToAdd)) {
+                            int indexOfTheEvil = segments.indexOf(segmentToAdd);
+                            MidiSegment evil = segments.get(indexOfTheEvil);
+                            throw new Exception("Why the HELL does this segment already exist?");
+                        }*/
                         if (partNumber == 1) {
-                            segments.set(indexOfLatestSplit, segment);
+                            segments.set(indexOfLatestSplit, segmentToAdd);
                         } else {
-                            segments.add(indexOfLatestSplit + 1, segment);
+
+                            segments.add(indexOfLatestSplit + 1, segmentToAdd);
                         }
 
                     position++;
@@ -447,10 +461,18 @@ public class Main {
                 instances = secondHalves.segments;
                 partNumber++;
 
+                String output = firstHalves.notes + "l" + firstHalves.getLengthSplit() + "p" + firstHalves.getPerfSplit();
+
+                if (registry.contains(output)) {
+                    throw new Exception("whyyyyyyy");
+                }
+
+                registry.add(output);
                 m.writeIntoWAVFiles(firstHalves);
             }
 
 
+            iteration++;
         }
     }
 
@@ -483,7 +505,7 @@ public class Main {
         return toReturn;
     }
 
-    public static ArrayList<SegmentContainer> stupidSort2(ArrayList<MidiSegment> segments) {
+    public static ArrayList<SegmentContainer> stupidSort2(ArrayList<MidiSegment> segments) throws Exception {
         ArrayList<SegmentContainer> toReturn = new ArrayList<>();
         for (int i = 0; i < segments.size(); i++) {
             MidiSegment currSegment  = segments.get(i);
@@ -494,19 +516,53 @@ public class Main {
                 toReturn.add(container);
             }
         }
-
-        int divisor = 2;
+        int sss = 0;
         for (int i = 0; i < toReturn.size(); i++) {
             SegmentContainer currContainer = toReturn.get(i);
-            int quarter = currContainer.size() / divisor; // change name, not really a quarter
+            if (currContainer.notes.equals("60100") && currContainer.getPerfSplit() == 0) {
+                sss++;
+            }
+        }
 
-            if (currContainer.size() > 200) {
+        int limit = 200; //max number of tracks we allow to be written to a single file
+        for (int i = 0; i < toReturn.size(); i++) {
+            SegmentContainer currContainer = toReturn.get(i);
+            int divisor = currContainer.size() / limit; //divisor must be dynamic or i will exprience incredible, incredible pain
+           // int quarter = currContainer.size() / divisor; // change name, not really a quarter
+
+            if (currContainer.size() > limit) {
+                int evilIndex = i;
                 for (int k = 0 ; k < divisor ; k++) {// TODO: standardize numbers, figure out a way to include a part number even if not needed so can reliabiliy know position of each signigifant end digit
-                    SegmentContainer toAdd = new SegmentContainer(new ArrayList<>(currContainer.segments.subList(k * quarter, (k + 1) * quarter)), k);
+                    SegmentContainer toAdd = new SegmentContainer(new ArrayList<>(currContainer.segments.subList(k * limit, (k + 1) * limit)), k);
+                    if (toReturn.contains(toAdd)) {
+                        evilIndex = toReturn.indexOf(toAdd);
+                        if (evilIndex != i) {
+                            throw new Exception ("aaaaaaaaaaa " + evilIndex);
+                        }
+                        //toReturn.add(toAdd);
+                        toReturn.set(evilIndex, toAdd);
+                    } else {
+                        toReturn.add(toAdd);
+                    }
+                }
+                if (currContainer.size() % limit > 0) {
+                    SegmentContainer toAdd = new SegmentContainer(new ArrayList<>(currContainer.segments.subList(limit * (divisor), currContainer.size())), divisor);
                     toReturn.add(toAdd);
                 }
-                toReturn.remove(i);
+
+                if (evilIndex != i) {
+                    throw new Exception ("aaaaaaaaaaa " + evilIndex);
+                }
+                //toReturn.remove(i);
+
                 i--;
+            }
+        }
+         sss = 0;
+        for (int i = 0; i < toReturn.size(); i++) {
+            SegmentContainer currContainer = toReturn.get(i);
+            if (currContainer.notes.equals("60100") && currContainer.getPerfSplit() == 0) {
+                sss++;
             }
         }
         return toReturn;
