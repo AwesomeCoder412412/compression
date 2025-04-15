@@ -37,6 +37,8 @@ public class WavWriterThread implements Runnable {
             fileOut.close();
 
 
+
+
             AudioInputStream stream2 = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(channels, bitDepth, numChannels)), new AudioFormat(sampleRate, bitDepth, numChannels, true, false), channels.getFirst().length);
             FileOutputStream fileOut2 = new FileOutputStream(outputPath.replaceFirst(".wav", "") + "_nc.wav");
             AudioSystem.write(stream2, AudioFileFormat.Type.WAVE, fileOut2);
@@ -122,9 +124,6 @@ public class WavWriterThread implements Runnable {
                 Files.delete(Paths.get(alsPath));
                 Files.delete(Paths.get(alsPathNC));
             }
-
-
-
         }
         catch (Exception e) {
             e.printStackTrace();

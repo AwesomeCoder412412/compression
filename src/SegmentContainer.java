@@ -37,6 +37,17 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
 
     public SegmentContainer(MidiSegment segment)  {
         segments = new ArrayList<>();
+        segments.add(segment);
+        notes = segment.notes;
+        channel = segment.channel;
+        setPerfSplit(segment.perfSplit);
+        segment.index = 0;
+        lengthSplit = segment.lengthSplit;
+    }
+
+    public SegmentContainer(MidiSegment segment, int empty)  {
+        segments = new ArrayList<>();
+        //segments.add(segment);
         notes = segment.notes;
         channel = segment.channel;
         setPerfSplit(segment.perfSplit);

@@ -15,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -60,7 +62,7 @@ public class Main {
 
         //System.out.println();
         //p.printMaximaMinima();
-       // p.lastResort();
+        // p.lastResort();
         //p.printStuff();
         //p.printTrueMaxes();
         //p.findTrueMaxesWithBias(p.theStuff);
@@ -70,15 +72,39 @@ public class Main {
 
 
         try {
-           // LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/rockafeller.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/rockafeller.lrc", 32);
+            // LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/rockafeller.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/rockafeller.lrc", 32);
             //l.compressToALS();
             CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
+           /* Decoder decoder = new Decoder("/Users/jacksegil/Desktop/compression/testfiles/" + "oneday" + "");
+            decoder.Decode();
+
+
+            int currValue = ThreadManager.threadCounter.get();
+            while (currValue > 0) {
+                int temp = ThreadManager.threadCounter.get();
+                if (temp != currValue) {
+                    System.out.println("We have " + currValue + " threads left");
+                }
+                currValue = temp;
+            }
+
+            ConcurrentHashMap<String, ArrayList<int[]>> dd = decoder.map;
+            System.out.println("Done!"); */
         }
-        catch (Exception e) {
+        catch(Exception e){
             e.printStackTrace();
         }
-    }
 
+        int currValue = ThreadManager.threadCounter.get();
+        while (currValue > 0) {
+            int temp = ThreadManager.threadCounter.get();
+            if (temp != currValue) {
+                System.out.println("We have " + currValue + " threads left");
+            }
+            currValue = temp;
+        }
+
+    }
     public static void implementationTesting(String[] args) {
 
         try {
@@ -111,7 +137,6 @@ public class Main {
         }
 
     }
-
     public static void XZTesting(String[] args) {
         try {
 
@@ -332,10 +357,32 @@ public class Main {
 
 
         try {
+
             var sortedSegments = stupidSort2(segments);
-            var sortedSegments1 = stupidSort2(segments1);
-            SliceSegments(m, segments, sortedSegments);
-            SliceSegments(m, segments1, sortedSegments1);
+           var sortedSegments1 = stupidSort2(segments1);
+
+/*
+            SegmentContainer container = new SegmentContainer(segments, 0);
+            ArrayList<SegmentContainer> rr = new ArrayList<>();
+            rr.add(container);
+            SliceSegmentsDebug(m, segments, rr);
+            rr.removeFirst();
+            container = new SegmentContainer(segments1, 0);
+            rr.add(container);
+            SliceSegmentsDebug(m, segments1, rr);
+*/
+            /*
+            for (MidiSegment segment : segments) {
+
+                m.writeIntoWAVFiles(segment);
+            }
+            for (MidiSegment segment : segments1) {
+                m.writeIntoWAVFiles(segment);
+            }*/
+
+
+           SliceSegments(m, segments, sortedSegments);
+           SliceSegments(m, segments1, sortedSegments1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -371,14 +418,6 @@ public class Main {
 
 
 
-            int currValue = ThreadManager.threadCounter.get();
-            while (currValue > 0) {
-                int temp = ThreadManager.threadCounter.get();
-               if (temp != currValue) {
-                   System.out.println("We have " + currValue + " threads left");
-               }
-               currValue = temp;
-            }
 
            /* byte[] resultAsByteArray = result.toByteArray();
             for (int i = 0; i < killMe.length; i++) {
@@ -400,9 +439,9 @@ public class Main {
             int partNumber = 1;
             while (!instances.isEmpty()) {
 
-                SegmentContainer firstHalves = new SegmentContainer(container.segments.getFirst());
+                SegmentContainer firstHalves = new SegmentContainer(container.segments.getFirst(), 0);
                 // System.out.println(segments.indexOf(container.segments.getFirst()));
-                SegmentContainer secondHalves = new SegmentContainer(container.segments.getFirst());
+                SegmentContainer secondHalves = new SegmentContainer(container.segments.getFirst(),0);
                 firstHalves.setLengthSplit(partNumber);
                 secondHalves.setLengthSplit(partNumber);
 
@@ -450,7 +489,6 @@ public class Main {
                         if (partNumber == 1) {
                             segments.set(indexOfLatestSplit, segmentToAdd);
                         } else {
-
                             segments.add(indexOfLatestSplit + 1, segmentToAdd);
                         }
 
@@ -475,6 +513,23 @@ public class Main {
             iteration++;
         }
     }
+
+    private static void SliceSegmentsDebug(MidiParser m, ArrayList<MidiSegment> segments, ArrayList<SegmentContainer> sortedSegments) throws Exception {
+
+        for (SegmentContainer container : sortedSegments) {
+
+            ArrayList<MidiSegment> instances = container.segments;
+            ArrayList<Integer> toWrite = new ArrayList<>();
+            for (MidiSegment segment : instances) {
+                toWrite.addAll(new ArrayList<>(Arrays.asList(Arrays.stream(segment.data.getFirst()).boxed().toArray(Integer[]::new))));
+            }
+            ArrayList<int[]> data = new ArrayList<>();
+            data.add(toWrite.stream().mapToInt(i -> i).toArray());
+            MidiSegment stupid = new MidiSegment(0, container.notes, data, container.channel);
+            m.writeIntoWAVFiles(stupid);
+        }
+    }
+
 
     public static void writeWAV(ArrayList<int[]> channels, int sampleRate, String outputPath, int bitDepth, int numChannels) throws IOException, InterruptedException {
         AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(channels, bitDepth, numChannels)), new AudioFormat(sampleRate, bitDepth, numChannels, true, false), channels.getFirst().length);
@@ -507,22 +562,39 @@ public class Main {
 
     public static ArrayList<SegmentContainer> stupidSort2(ArrayList<MidiSegment> segments) throws Exception {
         ArrayList<SegmentContainer> toReturn = new ArrayList<>();
-        for (int i = 0; i < segments.size(); i++) {
-            MidiSegment currSegment  = segments.get(i);
+
+        int count = 0;
+
+        for (MidiSegment currSegment : segments) {
             SegmentContainer container = new SegmentContainer(currSegment);
             if (toReturn.contains(container)) {
+                int size = toReturn.get(toReturn.indexOf(container)).size();
                 toReturn.get(toReturn.indexOf(container)).addMidiSegment(currSegment);
+                if (toReturn.get(toReturn.indexOf(container)).size() != size + 1) {
+                    System.err.println("fart");
+                }
             } else {
                 toReturn.add(container);
             }
-        }
-        int sss = 0;
-        for (int i = 0; i < toReturn.size(); i++) {
-            SegmentContainer currContainer = toReturn.get(i);
-            if (currContainer.notes.equals("60100") && currContainer.getPerfSplit() == 0) {
-                sss++;
+            count++;
+            int totalSize = 0;
+            for (SegmentContainer container2 : toReturn) {
+                totalSize += container2.segments.size();
+            }
+
+            if (count != totalSize) {
+                throw new Exception("I am going to throw this computer into hell");
             }
         }
+
+        int totalSize = 0;
+        for (SegmentContainer container : toReturn) {
+            totalSize += container.segments.size();
+        }
+        System.out.println("size " + totalSize);
+        System.out.println("total " + segments.size());
+
+
 
         int limit = 200; //max number of tracks we allow to be written to a single file
         for (int i = 0; i < toReturn.size(); i++) {
@@ -530,7 +602,9 @@ public class Main {
             int divisor = currContainer.size() / limit; //divisor must be dynamic or i will exprience incredible, incredible pain
            // int quarter = currContainer.size() / divisor; // change name, not really a quarter
 
+
             if (currContainer.size() > limit) {
+                int guard = 0;
                 int evilIndex = i;
                 for (int k = 0 ; k < divisor ; k++) {// TODO: standardize numbers, figure out a way to include a part number even if not needed so can reliabiliy know position of each signigifant end digit
                     SegmentContainer toAdd = new SegmentContainer(new ArrayList<>(currContainer.segments.subList(k * limit, (k + 1) * limit)), k);
@@ -540,31 +614,31 @@ public class Main {
                             throw new Exception ("aaaaaaaaaaa " + evilIndex);
                         }
                         //toReturn.add(toAdd);
+                        guard += toAdd.size();
                         toReturn.set(evilIndex, toAdd);
                     } else {
                         toReturn.add(toAdd);
+                        guard += toAdd.size();
                     }
                 }
                 if (currContainer.size() % limit > 0) {
                     SegmentContainer toAdd = new SegmentContainer(new ArrayList<>(currContainer.segments.subList(limit * (divisor), currContainer.size())), divisor);
                     toReturn.add(toAdd);
+                    guard += toAdd.size();
                 }
 
                 if (evilIndex != i) {
                     throw new Exception ("aaaaaaaaaaa " + evilIndex);
+                }
+                if (guard != currContainer.size()) {
+                    throw new Exception ("aaaadaaaaaaa " + guard);
                 }
                 //toReturn.remove(i);
 
                 i--;
             }
         }
-         sss = 0;
-        for (int i = 0; i < toReturn.size(); i++) {
-            SegmentContainer currContainer = toReturn.get(i);
-            if (currContainer.notes.equals("60100") && currContainer.getPerfSplit() == 0) {
-                sss++;
-            }
-        }
+
         return toReturn;
     }
 

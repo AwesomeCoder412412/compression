@@ -15,6 +15,7 @@ public class MidiParser {
     private int bitDepth;
     private String fileName;
     public ArrayList<String> registry;
+    Random rand;
 
     public MidiParser(String pcmPath, int bitDepth, int numChannels, int initSampleRate, String fileName, boolean processOG) throws IOException, InterruptedException {
         this.bitDepth = bitDepth;
@@ -32,6 +33,8 @@ public class MidiParser {
             Main.writeWAV(pcmData, sampleRate, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + ".wav", bitDepth, numChannels);
         }
         registry = new ArrayList<>();
+        rand = new Random();
+        rand.setSeed(0);
     }
 
 
@@ -321,6 +324,26 @@ public class MidiParser {
             registry.add(outputPath);
         }
         Thread.startVirtualThread(new WavWriterThread(container.rawData(), outputPath, bitDepth, container.size(), sampleRate));
+
+    }
+
+
+    public void writeIntoWAVFiles(MidiSegment segment) throws IOException, InterruptedException { //for debugging purposes only
+        if (!Files.isDirectory(Paths.get("/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "wav/"))) {
+            Files.createDirectory(Paths.get("/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "wav/"));
+        }
+
+        String outputPath = "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "wav/" + segment.notes + "l" + segment.lengthSplit + "p" + segment.perfSplit + ".wav";
+
+
+
+        while (registry.contains(outputPath)) {
+            outputPath = outputPath.substring(0, outputPath.length() - 4) +  + rand.nextInt() + ".wav";
+        }
+            registry.add(outputPath);
+
+
+        Thread.startVirtualThread(new BasicWavWriterThread(segment.data, outputPath, bitDepth, segment.data.size(), sampleRate));
 
     }
 
