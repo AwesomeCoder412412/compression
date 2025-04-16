@@ -8,7 +8,7 @@ import java.util.*;
 
 public class MidiParser {
 
-    static ArrayList<int[]> pcmData;
+    public static ArrayList<int[]> pcmData;
     public ArrayList<MidiSegment> segments;
     public ArrayList<MidiSegment> segments1;
     private static int sampleRate;
@@ -24,6 +24,9 @@ public class MidiParser {
             FileInputStream inFile = new FileInputStream(pcmPath);
             pcmData = readPCM(pcmPath, bitDepth, numChannels);
             inFile.close();
+
+            Thread.startVirtualThread(new BasicWavWriterThread(pcmData, "/Users/jacksegil/Desktop/compression/testfiles/stupid.wav", bitDepth, numChannels, sampleRate));
+
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -260,11 +263,10 @@ public class MidiParser {
 
         ArrayList<int[]> toReturn = new ArrayList<>();
         int[] arr = pcmData.get(channel);
-        if (startIndex - 100 < 0) {
-            toReturn.add(Arrays.copyOfRange(arr, (int) startIndex, (int) endIndex));
-        } else {
-            toReturn.add(Arrays.copyOfRange(arr, (int) startIndex, (int) endIndex));
-        }
+
+
+        int[] toAdd = Arrays.copyOfRange(arr, (int) startIndex, (int) endIndex);
+        toReturn.add(toAdd);
         return toReturn;
     }
 
@@ -275,6 +277,7 @@ public class MidiParser {
 
 
     public ArrayList<MidiSegment> theStuff(String filePath) {
+        ArrayList<Integer> track = new ArrayList<>();
         try {
             segments = new ArrayList<>();
             segments1 = new ArrayList<>();
@@ -282,14 +285,41 @@ public class MidiParser {
             for (int i = 0; i < tableOfContents.size() - 1; i++) {
                 String[] entry = tableOfContents.get(i);
                 String[] nextEntry = tableOfContents.get(i + 1);
+
+                long one = Long.parseLong(entry[1]);
+                long two = Long.parseLong(nextEntry[0]);
+
+                if (one != two) {
+                    System.out.println("problem");
+                }
+
                 segments.add(new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2] + 0, getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 0), 0, i)); // i = place
+
+                track.addAll(Decoder.ToIntArrayList(getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 0).get(0)));
+
                 segments1.add(new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2] + 1, getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 1), 1, i));
                 System.out.println("Start: " + entry[0] + ", End: " + entry[1] + ", Duration: " + (Long.parseLong(entry[1]) - Long.parseLong(entry[0])) +  ", Identifier: " + entry[2]);
             }
             String[] entry = tableOfContents.getLast();
             segments.add(new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2] + 0, getDataToEndMono(Long.parseLong(entry[0]), 0), 0, tableOfContents.size() - 1));
+
+            track.addAll(Decoder.ToIntArrayList(getDataToEndMono(Long.parseLong(entry[0]), 0).get(0)));
+            if (!Arrays.equals(pcmData.getFirst(), Decoder.toIntArray(track))) {
+                System.out.println("f");
+            }
+
+            ArrayList<Integer> reconstruction = new ArrayList<>();
+            for (MidiSegment segment : segments) {
+                reconstruction.addAll(Decoder.ToIntArrayList(segment.data.getFirst()));
+            }
+
+            if (!Arrays.equals(pcmData.getFirst(), Decoder.toIntArray(reconstruction))) {
+                System.out.println("f2");
+            }
+
             segments1.add(new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2] + 1, getDataToEndMono(Long.parseLong(entry[0]), 1), 1,tableOfContents.size() - 1));
             System.out.println("Start: " + entry[0] + ", End: " + entry[1] + ", Duration: " + (Long.parseLong(entry[1]) - Long.parseLong(entry[0])) +  ", Identifier: " + entry[2]);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -315,7 +345,7 @@ public class MidiParser {
         }
 
         String outputPath = "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + container.notes + "l" + container.getLengthSplit() + "p" + container.getPerfSplit() + ".wav";
-        if (outputPath.equals("/Users/jacksegil/Desktop/compression/testfiles/oneday/60100l1p0.wav")) {
+        if (outputPath.equals("/Users/jacksegil/Desktop/compression/testfiles/oneday/7230753079300l1p0.wav")) {
             System.out.println("Writing to " + outputPath);
         }
         if (registry.contains(outputPath)) {

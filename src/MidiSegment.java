@@ -9,6 +9,7 @@ public class MidiSegment implements Comparable<MidiSegment> {
     int perfSplit;
     public int index; // TODO
     public int lengthSplit;
+    public int segmentIndex; //for internal use only
     //slice info contained in notes
 
 
