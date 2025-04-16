@@ -329,7 +329,8 @@ public class LRCParser {
         }
 
         int samplesPerChannel = channels.get(0).length;
-        ByteBuffer buffer = ByteBuffer.allocate(samplesPerChannel * numChannels * (bitDepth / 8));
+        int capacity = samplesPerChannel * numChannels * (bitDepth / 8);
+        ByteBuffer buffer = ByteBuffer.allocate(capacity);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
         for (int i = 0; i < samplesPerChannel; i++) {

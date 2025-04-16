@@ -57,6 +57,9 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
 
     public SegmentContainer(ArrayList<MidiSegment> segments, int perfSplit)  {
         this.segments = segments;
+        for (int i = 0; i < segments.size(); i++) {
+            segments.get(i).index = i;
+        }
         notes = segments.getFirst().notes;
         channel = segments.getFirst().channel;
         setPerfSplit(perfSplit);
@@ -64,6 +67,9 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
 
     public SegmentContainer(ArrayList<MidiSegment> segments, int lengthSplit, boolean stupid)  { //TODO: kill stupid
         this.segments = segments;
+        for (int i = 0; i < segments.size(); i++) {
+            segments.get(i).index = i;
+        }
         notes = segments.getFirst().notes;
         channel = segments.getFirst().channel;
         setPerfSplit(segments.getFirst().perfSplit);

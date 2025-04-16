@@ -8,11 +8,13 @@ public class DecoderThread implements Runnable {
     ConcurrentHashMap<String, ArrayList<int[]>> map;
     private final String name;
     private final String filePath;
+    private Decoder decoder;
 
-    public DecoderThread(ConcurrentHashMap<String, ArrayList<int[]>> map, String name, String filePath) {
+    public DecoderThread(ConcurrentHashMap<String, ArrayList<int[]>> map, String name, String filePath, Decoder decoder) {
         this.map = map;
         this.name = name;
         this.filePath = filePath;
+        this.decoder = decoder;
     }
 
     @Override
@@ -25,10 +27,13 @@ public class DecoderThread implements Runnable {
         Process p = pb.start();
         p.waitFor();
 
-        map.put(name, Decoder.readPCMFromWAV("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + name + ".wav"));
+        map.put(name, Decoder.readPCMFromWAV("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + name + ".wav", decoder));
+
+
     }
     catch (Exception e) {
        e.printStackTrace();
+       System.err.println(filePath);
     }
         ThreadManager.threadCounter.decrementAndGet();
     }

@@ -19,11 +19,29 @@ public class MidiSegment implements Comparable<MidiSegment> {
         this.channel = channel;
     }
 
+    public MidiSegment(long duration, String notes, ArrayList<int[]> data, int channel, int perfSplit, boolean weird) {
+        this.duration = duration;
+        this.notes = notes;
+        this.data = data;
+        this.channel = channel;
+        this.perfSplit = perfSplit;
+    }
+
     public MidiSegment(long duration, String notes, ArrayList<int[]> data, int channel, int index) {
         this.duration = duration;
         this.notes = notes;
         this.data = data;
         this.channel = channel;
+        this.index = index;
+    }
+
+    public MidiSegment(long duration, String notes, ArrayList<int[]> data, int channel, int lengthSplit, int perfSplit, int index) {
+        this.duration = duration;
+        this.notes = notes;
+        this.data = data;
+        this.channel = channel;
+        this.lengthSplit = lengthSplit;
+        this.perfSplit = perfSplit;
         this.index = index;
     }
 
@@ -57,7 +75,7 @@ public class MidiSegment implements Comparable<MidiSegment> {
         if (o == null || getClass() != o.getClass()) return false;
         MidiSegment that = (MidiSegment) o;
        // return duration == that.duration && Objects.deepEquals(data, that.data) && Objects.equals(notes, that.notes);
-        return Objects.equals(notes, that.notes) && Objects.equals(index, that.index) && Objects.equals(channel, that.channel) && Objects.equals(lengthSplit, that.lengthSplit);
+        return Objects.equals(notes, that.notes) && Objects.equals(index, that.index) && Objects.equals(channel, that.channel) && Objects.equals(lengthSplit, that.lengthSplit) && Objects.equals(perfSplit, that.perfSplit);
     }
 
     public MidiSegment mergeMidiSegments(MidiSegment otherMidiSegment) {

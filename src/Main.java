@@ -74,22 +74,36 @@ public class Main {
         try {
             // LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/rockafeller.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/rockafeller.lrc", 32);
             //l.compressToALS();
-            CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
-           /* Decoder decoder = new Decoder("/Users/jacksegil/Desktop/compression/testfiles/" + "oneday" + "");
-            decoder.Decode();
+            //CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
 
 
-            int currValue = ThreadManager.threadCounter.get();
-            while (currValue > 0) {
-                int temp = ThreadManager.threadCounter.get();
-                if (temp != currValue) {
-                    System.out.println("We have " + currValue + " threads left");
+            boolean encode = true;
+
+            if(encode) {
+                CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
+
+            } else {
+
+                Decoder decoder = new Decoder("/Users/jacksegil/Desktop/compression/testfiles/" + "oneday" + "");
+                decoder.Decode();
+
+
+                int currValue = ThreadManager.threadCounter.get();
+                while (currValue > 0) {
+                    int temp = ThreadManager.threadCounter.get();
+                    if (temp != currValue) {
+                        System.out.println("We have " + currValue + " threads left");
+                    }
+                    currValue = temp;
                 }
-                currValue = temp;
+
+                ConcurrentHashMap<String, ArrayList<int[]>> dd = decoder.map;
+
+                System.out.println("Done!");
+
             }
 
-            ConcurrentHashMap<String, ArrayList<int[]>> dd = decoder.map;
-            System.out.println("Done!"); */
+
         }
         catch(Exception e){
             e.printStackTrace();
@@ -391,8 +405,16 @@ public class Main {
             File map = new File("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + "mapfirstchannel.txt");
             FileWriter myWriter = new FileWriter(map);
 
-            for (int i = 0; i < segments.size(); i++) {
-                myWriter.write(m.segmentEntry(segments.get(i)) + "\n");
+            for (MidiSegment segment : segments) {
+
+
+
+                String toWrite = m.segmentEntry(segment) + "\n";
+                if (toWrite.substring(0, 9).equals("60100l7p0")) {
+                    System.out.println(toWrite);
+                }
+
+                myWriter.write(toWrite);
                 //myWriter.write(m.segmentEntry(segments1.get(i)) + "\n");
             }
             myWriter.close();
@@ -400,9 +422,12 @@ public class Main {
              map = new File("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + "mapsecondchannel.txt");
             myWriter = new FileWriter(map);
 
-            for (int i = 0; i < segments1.size(); i++) {
-                //myWriter.write(m.segmentEntry(segments.get(i)) + "\n");
-                myWriter.write(m.segmentEntry(segments1.get(i)) + "\n");
+            for (MidiSegment segment : segments1) {
+                String toWrite = m.segmentEntry(segment) + "\n";
+                if (toWrite.substring(0, 9).equals("60100l7p0")) {
+                    System.out.println(toWrite);
+                }
+                myWriter.write(toWrite);
             }
 
             myWriter.close();
@@ -439,6 +464,12 @@ public class Main {
             int partNumber = 1;
             while (!instances.isEmpty()) {
 
+
+                for (MidiSegment segment : segments) {
+                    if (segment.notes.equals("60100") && segment.channel == 0 && segment.lengthSplit == 7 && segment.perfSplit == 0) {
+                        System.out.println(partNumber);
+                    }
+                }
                 SegmentContainer firstHalves = new SegmentContainer(container.segments.getFirst(), 0);
                 // System.out.println(segments.indexOf(container.segments.getFirst()));
                 SegmentContainer secondHalves = new SegmentContainer(container.segments.getFirst(),0);
@@ -454,46 +485,53 @@ public class Main {
                 for (MidiSegment instance : instances) {
                     ArrayList<int[]> tempList  = new ArrayList<int[]>();
                     tempList.add(Arrays.copyOfRange(instance.data.getFirst(), 0, length));
-                    firstHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel));
+                    firstHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel, instance.perfSplit, true));
                     if (length < instance.data.getFirst().length) {
                         ArrayList<int[]> tempList2  = new ArrayList<int[]>();//TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
                         tempList2.add(Arrays.copyOfRange(instance.data.getFirst(), length, instance.data.getFirst().length));
-                        secondHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList2, instance.channel));
+                        secondHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList2, instance.channel, instance.perfSplit, true));
                     }
                 }
 
-                //writeWAV(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwonder/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
-                //writeWAVNoCompression(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/iwondern/" + lyricSegment.getLyric() + partNumber + ".wav", bitDepth, instances.size());
-
-                // Thread.startVirtualThread(new WavWriterThread(firstHalves, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + midiSegment.notes + partNumber + ".wav", bitDepth, instances.size(), sampleRate));
-
-
                 int position = 0;
                 for (MidiSegment segment : firstHalves.segments) { //assumes firstHalves is a container containing midisegments compeltely ready for writing (outside of the lengthSplit value, which will be set here) , this loop updates the order refernence segment array for encoding purposees
+
+
+
                     MidiSegment segmentToSearchFor = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, segment.index); // only index, channel, and notes are used for comparsion
                     segmentToSearchFor.lengthSplit = partNumber - 1; //non-lengthsplit segments should have a lengthSplit of zero
-
-
 
                     segmentToSearchFor = instances.get(position);
                     int indexOfLatestSplit = segments.indexOf(segmentToSearchFor);
 
+                    MidiSegment segmentToAdd = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, segment.lengthSplit, segment.perfSplit, segment.index);
+                    segmentToAdd.lengthSplit = partNumber;
 
-                        MidiSegment segmentToAdd = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, segment.index);
-                        segmentToAdd.lengthSplit = partNumber;
-                      /*  if (segments.contains(segmentToAdd)) {
-                            int indexOfTheEvil = segments.indexOf(segmentToAdd);
-                            MidiSegment evil = segments.get(indexOfTheEvil);
-                            throw new Exception("Why the HELL does this segment already exist?");
-                        }*/
-                        if (partNumber == 1) {
-                            segments.set(indexOfLatestSplit, segmentToAdd);
-                        } else {
-                            segments.add(indexOfLatestSplit + 1, segmentToAdd);
+
+                    for (MidiSegment segment2 : segments) {
+                        if (segment2.notes.equals("60100") && segment2.channel == 0 && segment2.lengthSplit == 7 && segment2.perfSplit == 0) {
+                            System.out.println(partNumber);
                         }
+                    }
+
+                    if (partNumber == 1) {
+                        segments.set(indexOfLatestSplit, segmentToAdd);
+                    } else {
+                        segments.add(indexOfLatestSplit + 1, segmentToAdd);
+                    }
+
+                    for (MidiSegment segment2 : segments) {
+                        if (segment2.notes.equals("60100") && segment2.channel == 0 && segment2.lengthSplit == 7 && segment2.perfSplit == 0) {
+                            System.out.println(partNumber);
+                        }
+                    }
+
+
+
 
                     position++;
                 }
+
 
 
                 instances = secondHalves.segments;
@@ -506,7 +544,12 @@ public class Main {
                 }
 
                 registry.add(output);
-                m.writeIntoWAVFiles(firstHalves);
+                if (firstHalves.getLengthSplit() == 7 && firstHalves.notes.equals("60100") && firstHalves.getPerfSplit() == 0) {
+                    System.out.println(output);
+                }
+
+
+               m.writeIntoWAVFiles(firstHalves);
             }
 
 
@@ -616,6 +659,9 @@ public class Main {
                         //toReturn.add(toAdd);
                         guard += toAdd.size();
                         toReturn.set(evilIndex, toAdd);
+                        if (toAdd.notes.equals("60100")) {
+                            //60100l7p0
+                        }
                     } else {
                         toReturn.add(toAdd);
                         guard += toAdd.size();
@@ -1221,13 +1267,13 @@ public class Main {
 
     public static byte[] StringToByteArray(String data) {
         byte[] toReturn = new byte[data.length()];
+
         for (int k = 0; k < data.length(); k++) {
             toReturn[k] = Byte.parseByte(String.valueOf(data.charAt(k)));
         }
+
         return toReturn;
     }
-
-
 
 }
 

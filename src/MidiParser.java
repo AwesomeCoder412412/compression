@@ -8,7 +8,7 @@ import java.util.*;
 
 public class MidiParser {
 
-    private static ArrayList<int[]> pcmData;
+    static ArrayList<int[]> pcmData;
     public ArrayList<MidiSegment> segments;
     public ArrayList<MidiSegment> segments1;
     private static int sampleRate;
@@ -347,7 +347,7 @@ public class MidiParser {
 
     }
 
-    public String segmentEntry(MidiSegment segment) {
+    public static String segmentEntry(MidiSegment segment) {
         return segment.notes + "l" + segment.lengthSplit + "p" + segment.perfSplit + "i" + segment.index;
     }
 
