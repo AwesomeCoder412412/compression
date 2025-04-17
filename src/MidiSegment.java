@@ -9,7 +9,7 @@ public class MidiSegment implements Comparable<MidiSegment> {
     int perfSplit;
     public int index; // TODO
     public int lengthSplit;
-    public int segmentIndex; //for internal use only
+    public StupidInteger segmentIndex; //for internal use only
     //slice info contained in notes
 
 
@@ -18,6 +18,7 @@ public class MidiSegment implements Comparable<MidiSegment> {
         this.notes = notes;
         this.data = data;
         this.channel = channel;
+        segmentIndex = new StupidInteger(0);
     }
 
     public MidiSegment(long duration, String notes, ArrayList<int[]> data, int channel, int perfSplit, boolean weird) {
@@ -26,6 +27,7 @@ public class MidiSegment implements Comparable<MidiSegment> {
         this.data = data;
         this.channel = channel;
         this.perfSplit = perfSplit;
+        segmentIndex = new StupidInteger(0);
     }
 
     public MidiSegment(long duration, String notes, ArrayList<int[]> data, int channel, int index) {
@@ -34,6 +36,7 @@ public class MidiSegment implements Comparable<MidiSegment> {
         this.data = data;
         this.channel = channel;
         this.index = index;
+        segmentIndex = new StupidInteger(0);
     }
 
     public MidiSegment(long duration, String notes, ArrayList<int[]> data, int channel, int lengthSplit, int perfSplit, int index) {
@@ -44,6 +47,7 @@ public class MidiSegment implements Comparable<MidiSegment> {
         this.lengthSplit = lengthSplit;
         this.perfSplit = perfSplit;
         this.index = index;
+        segmentIndex = new StupidInteger(0);
     }
 
 
@@ -76,7 +80,7 @@ public class MidiSegment implements Comparable<MidiSegment> {
         if (o == null || getClass() != o.getClass()) return false;
         MidiSegment that = (MidiSegment) o;
        // return duration == that.duration && Objects.deepEquals(data, that.data) && Objects.equals(notes, that.notes);
-        return Objects.equals(notes, that.notes) && Objects.equals(index, that.index) && Objects.equals(channel, that.channel) && Objects.equals(lengthSplit, that.lengthSplit) && Objects.equals(perfSplit, that.perfSplit);
+        return Objects.equals(notes, that.notes) && Objects.equals(channel, that.channel) && Objects.equals(lengthSplit, that.lengthSplit) && Objects.equals(perfSplit, that.perfSplit) && Objects.equals(segmentIndex , that.segmentIndex);
     }
 
     public MidiSegment mergeMidiSegments(MidiSegment otherMidiSegment) {

@@ -77,7 +77,7 @@ public class Main {
             //CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
 
 
-            boolean encode = true;
+            boolean encode = false;
 
             if(encode) {
                 CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
@@ -414,16 +414,32 @@ public class Main {
                 System.out.println("f2");
             }
 
+            MidiSegment notes = segments.getLast();
 
-            for (int i = 0; i < segments1.size(); i++) {
-                segments.get(i).segmentIndex = i;
-                segments1.get(i).segmentIndex = i;
+
+            ArrayList<StupidInteger> stupidIntegers = new ArrayList<>();
+            ArrayList<StupidInteger> stupidIntegers1 = new ArrayList<>();
+
+
+            for (int i = 0; i < segments.size(); i++) {
+                stupidIntegers.add(new StupidInteger(i));
+                stupidIntegers1.add(new StupidInteger(i));
+                segments.get(i).segmentIndex = stupidIntegers.get(i);
+                segments1.get(i).segmentIndex = stupidIntegers1.get(i);
             }
+
+
+
 
           SliceSegments(m, segments, sortedSegments); //TODO: EVIL LIVES HERE
           SliceSegments(m, segments1, sortedSegments1);
 
-            reconstruction = new ArrayList<>();
+          if(!segments.getLast().equals(notes)) {
+              MidiSegment toCompare = segments.getLast();
+              System.out.println(toCompare + " " + notes);
+          }
+
+            reconstruction.clear();
             for (MidiSegment segment : segments) {
                 reconstruction.addAll(Decoder.ToIntArrayList(segment.data.getFirst()));
             }
@@ -494,6 +510,7 @@ public class Main {
         int iteration = 0;
         for (SegmentContainer container : sortedSegments) {
 
+
             ArrayList<MidiSegment> instances = container.segments;
             int partNumber = 1;
             while (!instances.isEmpty()) {
@@ -511,31 +528,64 @@ public class Main {
                 for (MidiSegment instance : instances) {
                     ArrayList<int[]> tempList  = new ArrayList<int[]>();
                     tempList.add(Arrays.copyOfRange(instance.data.getFirst(), 0, length));
-                    firstHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList, instance.channel, instance.perfSplit, true));
+                    MidiSegment toAdd = new MidiSegment(instance.duration, instance.notes, tempList, instance.channel, instance.perfSplit, true);
+                    toAdd.segmentIndex = instance.segmentIndex;
+                    firstHalves.addMidiSegment(toAdd);
+
                     if (length < instance.data.getFirst().length) {
                         ArrayList<int[]> tempList2  = new ArrayList<int[]>();//TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
                         tempList2.add(Arrays.copyOfRange(instance.data.getFirst(), length, instance.data.getFirst().length));
-                        secondHalves.addMidiSegment(new MidiSegment(instance.duration, instance.notes, tempList2, instance.channel, instance.perfSplit, true));
+                        toAdd = new MidiSegment(instance.duration, instance.notes, tempList2, instance.channel, instance.perfSplit, true);
+                        toAdd.segmentIndex = instance.segmentIndex;
+                        secondHalves.addMidiSegment(toAdd);
                     }
                 }
 
                 int position = 0;
+
+                if (container.notes.equals("7230753079300")) {
+                    System.out.println("f4ee");
+                }
+
+
+
                 for (MidiSegment segment : firstHalves.segments) { //assumes firstHalves is a container containing midisegments compeltely ready for writing (outside of the lengthSplit value, which will be set here) , this loop updates the order refernence segment array for encoding purposees
 
                     MidiSegment segmentToSearchFor = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, partNumber - 1, segment.perfSplit, segment.index);
+                    //MidiSegment segmentToSearchFor = instances.get(position);
+                    if (segmentToSearchFor.segmentIndex == segment.segmentIndex) {
+                        System.out.println("f4");
+                    }
                     segmentToSearchFor.segmentIndex = segment.segmentIndex;
                     int indexOfLatestSplit = segments.indexOf(segmentToSearchFor);
 
                     MidiSegment segmentToAdd = new MidiSegment(segment.duration, segment.notes, segment.data, segment.channel, partNumber, segment.perfSplit, segment.index);
 
 
+                    if (indexOfLatestSplit == -1) {
+                        System.err.println("dang, not found");
+                    }
+
                     if (partNumber == 1) {
+                        segmentToAdd.segmentIndex = segmentToSearchFor.segmentIndex;
                         segments.set(indexOfLatestSplit, segmentToAdd);
                     } else {
+                        segmentToAdd.segmentIndex = segmentToSearchFor.segmentIndex;
                         segments.add(indexOfLatestSplit + 1, segmentToAdd);//TODO: they're getting added to the wrong things, we needa better way of identifiyng hte INDEX of the segment to search for cause the index property isn't reliable!
-                        for (int i = 0; i < segments.size(); i++) {
-                            segments.get(i).segmentIndex = i;
+
+                       /* for (int i = 0; i < secondHalves.segments.size(); i++) {
+                            if (secondHalves.segments.get(i).segmentIndex.getValue() > indexOfLatestSplit) {
+                                secondHalves.segments.get(i).segmentIndex.increment();
+                            }
                         }
+                        for (int i = 0; i < firstHalves.segments.size(); i++) {
+                            if (firstHalves.segments.get(i).segmentIndex.getValue() > indexOfLatestSplit) {
+                                firstHalves.segments.get(i).segmentIndex.increment();
+                            }
+                        }*/ /*
+                        for (int i = 0; i < segments.size(); i++) {
+                            segments.get(i).segmentIndex.setValue(i);
+                        }*/
                     }
 
 
@@ -558,7 +608,7 @@ public class Main {
                 registry.add(output);
 
 
-               //m.writeIntoWAVFiles(firstHalves);
+               m.writeIntoWAVFiles(firstHalves);
             }
 
 
