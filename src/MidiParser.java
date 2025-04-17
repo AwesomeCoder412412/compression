@@ -1,4 +1,8 @@
 import javax.sound.midi.*;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -22,10 +26,28 @@ public class MidiParser {
         sampleRate = initSampleRate;
         try {
             FileInputStream inFile = new FileInputStream(pcmPath);
-            pcmData = readPCM(pcmPath, bitDepth, numChannels);
+            pcmData = readPCMFromWAV(pcmPath);
+
+
+
             inFile.close();
 
             Thread.startVirtualThread(new BasicWavWriterThread(pcmData, "/Users/jacksegil/Desktop/compression/testfiles/stupid.wav", bitDepth, numChannels, sampleRate));
+
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(pcmPath));
+            AudioFormat format = audioInputStream.getFormat();
+            byte[] data = audioInputStream.readAllBytes();
+            byte[] dota = LRCParser.writePCMToByteArray(pcmData, bitDepth, numChannels)
+            ;
+            for (int i = 0; i < dota.length; i++) {
+                if (dota[i] != data[i]) {
+                    System.out.println("Error in reading PCM");
+                }
+            }
+            if (Arrays.equals(dota, data)) {
+                System.out.println("Successfully read PCM from " + pcmPath);
+            }
+
 
         }
         catch (Exception e) {
@@ -131,8 +153,32 @@ public class MidiParser {
         return sortedNotes.toString().replace(" ", "").replace("[", "").replace("]", "").replace(",", "").replace("-T","");
     }
 
-    public ArrayList<int[]> readPCM(String filePath, int bitDepth, int numChannels) throws IOException {
-        byte[] data = Files.readAllBytes(Paths.get(filePath));
+    public ArrayList<int[]> readPCMFromWAV(String filePath) throws IOException {
+
+
+        File wavFile = new File(filePath); // Replace with your file path
+
+
+        byte[] data = new byte[(int) wavFile.length()];
+
+        int numChannels = 0;
+
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(wavFile);
+            AudioFormat format = audioInputStream.getFormat();
+            data = audioInputStream.readAllBytes();
+
+            bitDepth = format.getSampleSizeInBits();
+            numChannels = format.getChannels();
+            sampleRate = (int) format.getSampleRate();
+
+        } catch (UnsupportedAudioFileException e) {
+            System.err.println("Unsupported audio file format: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Error reading the audio file: " + e.getMessage());
+        }
+
+
         int bytesPerSample = bitDepth / 8;
         int totalSamples = data.length / bytesPerSample;
         int samplesPerChannel = totalSamples / numChannels;

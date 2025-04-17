@@ -67,11 +67,6 @@ public class Decoder {
 
 
 
-        MidiParser m = new MidiParser("/Users/jacksegil/Desktop/compression/testfiles/oneday.raw", 24, 2, 44100, "oneday", false);
-
-        ArrayList<int[]> toRead = m.pcmData;
-        ArrayList<MidiSegment> segments = m.theStuff("/Users/jacksegil/Downloads/oneday.mid");
-        ArrayList<MidiSegment> segments1 = m.segments1;
 
         System.out.println(numChannels);
         AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(toWrite, bitDepth, 2)), new AudioFormat(sampleRate, bitDepth, 2, true, false), toWrite.getFirst().length);

@@ -274,7 +274,7 @@ public class Main {
             int size = killMe.length;
             System.out.println(size);*/
 
-            MidiParser m = new MidiParser("/Users/jacksegil/Desktop/compression/testfiles/oneday.raw", 24, 2, 44100, "oneday", false);
+            MidiParser m = new MidiParser("/Users/jacksegil/Desktop/compression/testfiles/oneday.wav", 24, 2, 44100, "oneday", false);
             ArrayList<MidiSegment> segments = m.theStuff("/Users/jacksegil/Downloads/oneday.mid");
             ArrayList<MidiSegment> segments1 = m.segments1;
 
