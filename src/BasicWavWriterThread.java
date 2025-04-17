@@ -22,7 +22,6 @@ public class BasicWavWriterThread implements Runnable {
         this.sampleRate = sampleRate;
     }
 
-
     @Override
     public void run() {
         ThreadManager.threadCounter.incrementAndGet();

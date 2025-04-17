@@ -7,11 +7,10 @@ public class MidiSegment implements Comparable<MidiSegment> {
     String notes;
     int channel;
     int perfSplit;
-    public int index; // TODO
+    public int index;
     public int lengthSplit;
     public StupidInteger segmentIndex; //for internal use only
     //slice info contained in notes
-
 
     public MidiSegment(long duration, String notes, ArrayList<int[]> data, int channel) {
         this.duration = duration;
@@ -50,12 +49,10 @@ public class MidiSegment implements Comparable<MidiSegment> {
         segmentIndex = new StupidInteger(0);
     }
 
-
     @Override
     public int compareTo(MidiSegment o) {
         return notes.compareTo(o.notes);
     }
-
 
     @Override
     public int hashCode() {
@@ -78,14 +75,6 @@ public class MidiSegment implements Comparable<MidiSegment> {
         MidiSegment that = (MidiSegment) o;
         // return duration == that.duration && Objects.deepEquals(data, that.data) && Objects.equals(notes, that.notes);
         return Objects.equals(notes, that.notes) && Objects.equals(channel, that.channel) && Objects.equals(lengthSplit, that.lengthSplit) && Objects.equals(perfSplit, that.perfSplit) && Objects.equals(segmentIndex, that.segmentIndex);
-    }
-
-    public MidiSegment mergeMidiSegments(MidiSegment otherMidiSegment) {
-        if (!notes.equals(otherMidiSegment.notes)) {
-            throw new IllegalArgumentException("Only merge if the data matches!");
-        }
-        data.addAll(otherMidiSegment.data);
-        return this;
     }
 }
 

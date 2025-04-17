@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Decoder {
 
-    public ConcurrentHashMap<String, ArrayList<int[]>> map;
     private final String filePath;
+    public ConcurrentHashMap<String, ArrayList<int[]>> map;
     private int bitDepth;
     private int numChannels;
     private int sampleRate;
@@ -16,100 +16,6 @@ public class Decoder {
     public Decoder(String filePath) {
         map = new ConcurrentHashMap<>();
         this.filePath = filePath;
-    }
-
-    public ArrayList<int[]> Decode() throws IOException, InterruptedException {
-
-        String directoryPath = filePath; //assumed unzipped for now
-        File directory = new File(directoryPath);
-
-        if (directory.isDirectory()) {
-            File[] files = directory.listFiles();
-
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isFile() && !file.getName().endsWith(".txt") && !file.isHidden()) {
-                        System.out.println("File: " + file.getName().substring(0, file.getName().length() - 4));
-                        Thread.startVirtualThread(new DecoderThread(map, file.getName().substring(0, file.getName().length() - 4), filePath + "/" + file.getName(), this));
-                    } else if (file.isDirectory()) {
-                        System.out.println("Directory: " + file.getName());
-                    }
-                }
-            } else {
-                System.err.println("Could not list files in directory: " + directoryPath);
-            }
-        } else {
-            System.err.println("Not a directory: " + directoryPath);
-        }
-
-        File leftMap = new File(filePath + "/mapfirstchannel.txt");
-        File rightMap = new File(filePath + "/mapsecondchannel.txt");
-
-        ArrayList<Integer> leftChannel = new ArrayList<>();
-        ArrayList<Integer> rightChannel = new ArrayList<>();
-
-
-        while (ThreadManager.threadCounter.get() > 0) { //stupid
-            // i despise this but it works
-        }
-
-        rebuild(leftMap, leftChannel, "left");
-        rebuild(rightMap, rightChannel, "right");
-
-        ArrayList<int[]> toWrite = new ArrayList<>();
-        toWrite.add(toIntArray(leftChannel));
-        toWrite.add(toIntArray(rightChannel));
-
-        //Thread.startVirtualThread(new BasicWavWriterThread(toWrite, "/Users/jacksegil/Desktop/compression/testfiles/output.wav", bitDepth, numChannels, sampleRate));
-
-
-        System.out.println(numChannels);
-        AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(toWrite, bitDepth, 2)), new AudioFormat(sampleRate, bitDepth, 2, true, false), toWrite.getFirst().length);
-        FileOutputStream fileOut = new FileOutputStream("/Users/jacksegil/Desktop/compression/testfiles/output.wav");
-        AudioSystem.write(stream, AudioFileFormat.Type.WAVE, fileOut);
-        fileOut.close();
-
-        return null;
-    }
-
-    private void rebuild(File currMap, ArrayList<Integer> currChannel, String channelName) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(currMap))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Process each line here
-                String[] split = line.split("i");
-                String key = split[0];
-                int index = Integer.parseInt(split[1]);
-
-                if (!map.containsKey(key)) {
-                    key = key + "_nc";
-                    //TODO: this should never, ever, ever work and if it does we got issues
-                }
-                if (!map.containsKey(key)) {
-                    throw new Exception("we messed up" + key);
-                }
-
-                ArrayList<int[]> channels = map.get(key);
-                int[] channel = channels.get(index);
-                ArrayList<Integer> toAdd = ToIntArrayList(channel);
-
-
-                currChannel.addAll(toAdd);
-
-                /*
-                AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(map.get(key), bitDepth, map.get(key).size())), new AudioFormat(sampleRate, bitDepth, map.get(key).size(), true, false), map.get(key).getFirst().length);
-                FileOutputStream fileOut = new FileOutputStream("/Users/jacksegil/Desktop/compression/testfiles/" + key + "weird.wav");
-                AudioSystem.write(stream, AudioFileFormat.Type.WAVE, fileOut);
-                fileOut.close();
-                */
-
-
-            }
-        } catch (IOException e) {
-            System.err.println("Error reading " + channelName + " map file: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public static ArrayList<Integer> ToIntArrayList(int[] arr) {
@@ -129,12 +35,7 @@ public class Decoder {
     }
 
     public static ArrayList<int[]> readPCMFromWAV(String file, Decoder decoder) throws IOException {
-
-        if (file.contains("46448196010601160360562170l1p0")) {
-            System.out.println("Reading PCM file: " + file);
-        }
-
-        File wavFile = new File(file); // Replace with your file path
+        File wavFile = new File(file);
 
         int bitDepth = 0;
         int numChannels = 0;
@@ -151,8 +52,6 @@ public class Decoder {
             numChannels = format.getChannels();
             sampleRate = (int) format.getSampleRate();
 
-            // System.out.println("Bit Depth: " + bitDepth + " bits");
-            // System.out.println("Number of Channels: " + numChannels);
             decoder.bitDepth = bitDepth;
             decoder.numChannels = numChannels;
             decoder.sampleRate = sampleRate;
@@ -162,7 +61,6 @@ public class Decoder {
         } catch (IOException e) {
             System.err.println("Error reading the audio file: " + e.getMessage());
         }
-
 
         int bytesPerSample = bitDepth / 8;
         int totalSamples = data.length / bytesPerSample;
@@ -201,6 +99,85 @@ public class Decoder {
         }
 
         return channels;
+    }
+
+    public ArrayList<int[]> Decode() throws IOException, InterruptedException {
+
+        String directoryPath = filePath; //assumed unzipped for now
+        File directory = new File(directoryPath);
+
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile() && !file.getName().endsWith(".txt") && !file.isHidden()) {
+                        System.out.println("File: " + file.getName().substring(0, file.getName().length() - 4));
+                        Thread.startVirtualThread(new DecoderThread(map, file.getName().substring(0, file.getName().length() - 4), filePath + "/" + file.getName(), this));
+                    } else if (file.isDirectory()) {
+                        System.out.println("Directory: " + file.getName());
+                    }
+                }
+            } else {
+                System.err.println("Could not list files in directory: " + directoryPath);
+            }
+        } else {
+            System.err.println("Not a directory: " + directoryPath);
+        }
+
+        File leftMap = new File(filePath + "/mapfirstchannel.txt");
+        File rightMap = new File(filePath + "/mapsecondchannel.txt");
+
+        ArrayList<Integer> leftChannel = new ArrayList<>();
+        ArrayList<Integer> rightChannel = new ArrayList<>();
+
+
+        while (ThreadManager.threadCounter.get() > 0) {
+            // I despise this but it works. All hail the ThreadManager.
+        }
+
+        rebuild(leftMap, leftChannel, "left");
+        rebuild(rightMap, rightChannel, "right");
+
+        ArrayList<int[]> toWrite = new ArrayList<>();
+        toWrite.add(toIntArray(leftChannel));
+        toWrite.add(toIntArray(rightChannel));
+
+        System.out.println(numChannels);
+        AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(toWrite, bitDepth, 2)), new AudioFormat(sampleRate, bitDepth, 2, true, false), toWrite.getFirst().length);
+        FileOutputStream fileOut = new FileOutputStream("/Users/jacksegil/Desktop/compression/testfiles/output.wav");
+        AudioSystem.write(stream, AudioFileFormat.Type.WAVE, fileOut);
+        fileOut.close();
+
+        return null;
+    }
+
+    private void rebuild(File currMap, ArrayList<Integer> currChannel, String channelName) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(currMap))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Process each line here
+                String[] split = line.split("i");
+                String key = split[0];
+                int index = Integer.parseInt(split[1]);
+
+                if (!map.containsKey(key)) {
+                    key = key + "_nc";
+                }
+                if (!map.containsKey(key)) {
+                    throw new Exception("we messed up" + key);
+                }
+
+                ArrayList<int[]> channels = map.get(key);
+                int[] channel = channels.get(index);
+                ArrayList<Integer> toAdd = ToIntArrayList(channel);
+                currChannel.addAll(toAdd);
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading " + channelName + " map file: " + e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

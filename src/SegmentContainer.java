@@ -6,7 +6,6 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
     String notes;
     final int channel;
 
-
     private int lengthSplit;
     private int perfSplit;
 
@@ -32,7 +31,6 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
             segments.get(i).lengthSplit = lengthSplit;
         }
     }
-
 
     public SegmentContainer(MidiSegment segment) {
         segments = new ArrayList<>();
@@ -64,23 +62,6 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         setPerfSplit(perfSplit);
     }
 
-    public SegmentContainer(ArrayList<MidiSegment> segments, int lengthSplit, boolean stupid) { //TODO: kill stupid
-        this.segments = segments;
-        for (int i = 0; i < segments.size(); i++) {
-            segments.get(i).index = i;
-        }
-        notes = segments.getFirst().notes;
-        channel = segments.getFirst().channel;
-        setPerfSplit(segments.getFirst().perfSplit);
-        setLengthSplit(lengthSplit);
-    }
-
-    public SegmentContainer[] split() {
-        SegmentContainer[] splits = new SegmentContainer[2];
-
-        return splits;
-    }
-
     public ArrayList<int[]> rawData() {
         ArrayList<int[]> data = new ArrayList<>();
         for (MidiSegment seg : segments) {
@@ -99,7 +80,6 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
     public int size() {
         return segments.size();
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -121,8 +101,5 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        //return notes.compareTo(o.notes);
     }
-
-
 }

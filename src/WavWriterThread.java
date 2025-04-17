@@ -25,8 +25,6 @@ public class WavWriterThread implements Runnable {
         this.sampleRate = sampleRate;
     }
 
-
-
     @Override
     public void run() {
         ThreadManager.threadCounter.incrementAndGet();
@@ -35,9 +33,6 @@ public class WavWriterThread implements Runnable {
             FileOutputStream fileOut = new FileOutputStream(outputPath);
             AudioSystem.write(stream, AudioFileFormat.Type.WAVE, fileOut);
             fileOut.close();
-
-
-
 
             AudioInputStream stream2 = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(channels, bitDepth, numChannels)), new AudioFormat(sampleRate, bitDepth, numChannels, true, false), channels.getFirst().length);
             FileOutputStream fileOut2 = new FileOutputStream(outputPath.replaceFirst(".wav", "") + "_nc.wav");
@@ -90,14 +85,7 @@ public class WavWriterThread implements Runnable {
             String alsPath = outputPath.replaceFirst("wav", "als");
 
             String alsPathNC = outputPath.replaceFirst(".wav", "") + "_nc.als";
-            //String alsPathS = outputPath.replaceFirst(".wav", "") + "_s.als";
 
-
-//            while(!Files.exists(Paths.get(alsPathNC))) {
-//
-//            }
-
-            //System.out.println(Files.exists(Paths.get(alsPathNC)));
             int c = Files.readAllBytes(Paths.get(alsPath)).length;
             int nc = Files.readAllBytes(Paths.get(alsPathNC)).length;
             //int s = Files.readAllBytes(Paths.get(alsPathS)).length;
