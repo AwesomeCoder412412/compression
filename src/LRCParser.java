@@ -14,11 +14,11 @@ import java.util.Arrays;
 
 public class LRCParser {
 
-    private ArrayList<int[]> pcmData;
+    private final ArrayList<int[]> pcmData;
     public ArrayList<LyricSegment> lyrics;
-    private int sampleRate;
-    private int bitDepth;
-    private String fileName;
+    private final int sampleRate;
+    private final int bitDepth;
+    private final String fileName;
 
 
 

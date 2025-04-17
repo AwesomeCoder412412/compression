@@ -51,13 +51,10 @@ public class MidiSegment implements Comparable<MidiSegment> {
     }
 
 
-
-
     @Override
     public int compareTo(MidiSegment o) {
         return notes.compareTo(o.notes);
     }
-
 
 
     @Override
@@ -79,8 +76,8 @@ public class MidiSegment implements Comparable<MidiSegment> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MidiSegment that = (MidiSegment) o;
-       // return duration == that.duration && Objects.deepEquals(data, that.data) && Objects.equals(notes, that.notes);
-        return Objects.equals(notes, that.notes) && Objects.equals(channel, that.channel) && Objects.equals(lengthSplit, that.lengthSplit) && Objects.equals(perfSplit, that.perfSplit) && Objects.equals(segmentIndex , that.segmentIndex);
+        // return duration == that.duration && Objects.deepEquals(data, that.data) && Objects.equals(notes, that.notes);
+        return Objects.equals(notes, that.notes) && Objects.equals(channel, that.channel) && Objects.equals(lengthSplit, that.lengthSplit) && Objects.equals(perfSplit, that.perfSplit) && Objects.equals(segmentIndex, that.segmentIndex);
     }
 
     public MidiSegment mergeMidiSegments(MidiSegment otherMidiSegment) {
@@ -88,8 +85,6 @@ public class MidiSegment implements Comparable<MidiSegment> {
             throw new IllegalArgumentException("Only merge if the data matches!");
         }
         data.addAll(otherMidiSegment.data);
-       // places.addAll(otherMidiSegment.places);
-
         return this;
     }
 }

@@ -167,7 +167,7 @@ public class PCMParser
     public static int[] usedBitsArray(int[] arr) {
         int[] toReturn = new int[arr.length];
         for (int i = 0; i < arr.length; i++) {
-            toReturn[i] = (int) countUsedBits(arr[i]);
+            toReturn[i] = countUsedBits(arr[i]);
         }
         return toReturn;
     }

@@ -1,8 +1,5 @@
-import XZ.*;
-
-import java.io.*;
-
-import XZ.lz.*;
+import XZ.LZMA2Options;
+import XZ.XZOutputStream;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -11,80 +8,31 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
+
     public static void main(String[] args) throws IOException {
-        //implementationTesting(args);
-        //XZTesting(args);
-        //LifeIsPain(args);
-        String megalovania = "megalovaniamidi.mid";
-        String testfile = "simple.txt";
-        String random = "RandomNumbers";
-        String randomMax = "MaxRandomNumbers";
-        String random500 = "500RandomNumbers";
-        String tankBattle = "tankbattle.zip";
-        String tankBattle2 = "tankbattle.7z";
-        String readme = "readme.txt";
-        String loremipsum = "loremipsum.txt";
-        String loremipsumzip = "loremipsum.zip";
-        String loremipsum7z = "loremipsum.7z";
-        String tankfolder = "tankfolder";
-        String spamcdmid = "spamcd.mid";
-        String holygrail = "megalovania.pcm";
-        String coffinnails = "coffinnails.pcm";
-        String spamcd = "spamcd.pcm";
 
         String currFile = "stupid.midi";
 
-        //PCMParser p = new PCMParser("/Users/jacksegil/Desktop/compression/testfiles/" + "testsong2.pcm");
-
-        //System.out.println(Arrays.toString(l.getData("[00:02.69]", "[00:04.09]")));
-        //ArrayList<int[]> weird = l.readPCM("/Users/jacksegil/Desktop/compression/testfiles/rockafellerdupe.pcm", 24, 2);
-        //System.out.println(Arrays.toString(LongestCommonPattern(l.lyrics.get(0).getPcmData().getFirst(), l.lyrics.get(2).getPcmData().getFirst())));
-/*
-        PCMParser pp = new PCMParser("/Users/jacksegil/Downloads/misery1.pcm", "/Users/jacksegil/Downloads/misery2.pcm");
         try {
-            pp.calculateDiffSavings();
-            //System.out.println(PCMParser.countUsedBits(10) + " " + PCMParser.countUsedBits2(-1));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
-
-
-        //System.out.println();
-        //p.printMaximaMinima();
-        // p.lastResort();
-        //p.printStuff();
-        //p.printTrueMaxes();
-        //p.findTrueMaxesWithBias(p.theStuff);
-        //System.out.println(p.trueNumZeros());
-        //p.findTrueMaxesWithBiasAverage(p.theStuff);
-        //System.out.println(p.calculateStandardDeviationOfMaxes());
-
-
-        try {
-            // LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/rockafeller.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/rockafeller.lrc", 32);
-            //l.compressToALS();
-            //CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
-
-
             boolean encode = false;
 
-            if(encode) {
-                CommonSubpatternDevelopment("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
+            if (encode) {
+                Encoder("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
 
             } else {
 
-                Decoder decoder = new Decoder("/Users/jacksegil/Desktop/compression/testfiles/" + "oneday" + "");
+                Decoder decoder = new Decoder("/Users/jacksegil/Desktop/compression/testfiles/" + "oneday");
                 decoder.Decode();
 
 
@@ -103,9 +51,7 @@ public class Main {
 
             }
 
-
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -119,38 +65,8 @@ public class Main {
         }
 
     }
-    public static void implementationTesting(String[] args) {
-
-        try {
-            File fileData = new File(args[0]);
-            FileInputStream inFile = new FileInputStream(args[0]);
-            //FileOutputStream outfile = new FileOutputStream(args[0] + ".xz");
-
-            //ArrayCache arrayCache = ArrayCache.getDefaultCache();
-
-            System.out.println(Runtime.getRuntime().maxMemory());
-            ArrayCache arrayCache = ArrayCache.getDefaultCache();
-
-            MyBT4 myBT4 = new MyBT4(805306368, 4096, 4096, 64, 273, Integer.MAX_VALUE, arrayCache);
-
-            BT4 bt4 = new BT4(805306368, 4096, 4096, 64, 273, Integer.MAX_VALUE, arrayCache);
 
 
-            byte[] killMe = inFile.readAllBytes();
-
-            int size = killMe.length;
-
-            //killMe =
-
-            bt4.fillWindow(killMe, 0, size);
-
-
-            System.out.println(bt4.getMatches().toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
     public static void XZTesting(String[] args) {
         try {
 
@@ -199,211 +115,17 @@ public class Main {
         }
     }
 
-    public static Storage result;
 
-    public static void LifeIsPain(String[] args) {
-
-        try {
-            File fileData = new File(args[0]);
-            FileInputStream inFile = new FileInputStream(args[0]);
-            byte[] killMe = inFile.readAllBytes();
-            int size = killMe.length;
-            System.out.println(size);
-            //System.out.println(TheProblem(killMe, 58));
-            //killMe = new byte[]{2, 5, 7, 0, 1, 3, 2, 6, 8, 9, 0, 1, 3, 5, 7 ,8, 9};
-            result = new Storage(new Storage[size]);
-
-
-            //ArrayList<Storage> patterns = ReplaceAllLongestRepeatingPatterns(killMe, result, 0);
-
-
-
-            //TestMethod(args, patterns);
-            //System.out.println(Arrays.deepToString(LongestCommonPattern(patterns)));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public static void TestMethod(String[] args, ArrayList<Storage> toCompare) {
-        ArrayList<Storage> patterns = null;
-        Storage[] coolResult = null;
+    public static void Encoder(String filepath, boolean readFromFile, boolean writeToFile, int minPatternSize) throws IOException, InvalidMidiDataException, MidiUnavailableException, InterruptedException {
+        File fileData = new File(filepath);
+        FileInputStream inFile = new FileInputStream(filepath);
+        MidiParser m = new MidiParser("/Users/jacksegil/Desktop/compression/testfiles/oneday.wav", 24, 2, 44100, "oneday", false);
+        ArrayList<MidiSegment> segments = m.theStuff("/Users/jacksegil/Downloads/oneday.mid");
+        ArrayList<MidiSegment> segments1 = m.segments1;
 
         try {
-            FileInputStream fileIn = new FileInputStream("patterns.storage");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            patterns = (ArrayList<Storage>) in.readObject();
-            in.close();
-            fileIn.close();
-        } catch (IOException | ClassNotFoundException ioe) {
-            ioe.printStackTrace();
-        }
-
-        try {
-            FileInputStream fileIn = new FileInputStream("result.storage");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            coolResult = (Storage[]) in.readObject();
-            in.close();
-            fileIn.close();
-        } catch (IOException | ClassNotFoundException ioe) {
-            ioe.printStackTrace();
-        }
-
-
-        System.out.println("The big test: ");
-        System.out.println(Arrays.deepToString(patterns.toArray()));
-        System.out.println(Arrays.deepEquals(patterns.toArray(), toCompare.toArray()));
-        System.out.println("The bigger test: ");
-        System.out.println(Arrays.deepToString(result.getPattern()));
-        System.out.println(Arrays.deepEquals(result.getPattern(), coolResult));
-
-
-
-    }
-
-    public static void CommonSubpatternDevelopment(String filepath, boolean readFromFile, boolean writeToFile, int minPatternSize) throws IOException, InvalidMidiDataException, MidiUnavailableException, InterruptedException {
-            File fileData = new File(filepath);
-            FileInputStream inFile = new FileInputStream(filepath);
-           // byte[] killMe = inFile.readAllBytes();
-            //LRCParser l = new LRCParser("","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/aroundtheworld.lrc", 32);
-            /*LRCParser l = new LRCParser("/Users/jacksegil/Desktop/compression/testfiles/misery.raw","/Users/jacksegil/Desktop/compression/testfiles/lyrics/lrc/misery.lrc", 16, 2, 44100, "misery");
-            System.out.println(l.lyrics);
-            LyricSegment[] killMe = l.lyrics.toArray(new LyricSegment[0]);
-            int size = killMe.length;
-            System.out.println(size);*/
-
-            MidiParser m = new MidiParser("/Users/jacksegil/Desktop/compression/testfiles/oneday.wav", 24, 2, 44100, "oneday", false);
-            ArrayList<MidiSegment> segments = m.theStuff("/Users/jacksegil/Downloads/oneday.mid");
-            ArrayList<MidiSegment> segments1 = m.segments1;
-
-        // ArrayList<String[]> tableOfContents = MidiParser.parseMidiFile("/Users/jacksegil/Downloads/mega.mid");
-
-            MidiSegment[] midiSegments = segments.toArray(new MidiSegment[0]);
-            int size = midiSegments.length;
-
-            /* TODO: UNCOMMENT WHEN USEFUL
-
-            //System.out.println(TheProblem(killMe, 58));
-            //killMe = new byte[]{2, 5, 7, 0, 1, 3, 2, 6, 8, 9, 0, 1, 3, 5, 7 ,8, 9};
-            result = new Storage(new Storage[size]);
-            //double fileLength = fileData.length();
-            double fileLength = size;
-
-            //convert bytes to storage
-            for (int i = 0; i < midiSegments.length; i++) {
-                result.getPattern()[i] = new Storage<MidiSegment>(midiSegments[i]);
-            }
-
-            if (writeToFile) {
-                result.setSubpatterns(ReplaceAllLongestRepeatingPatterns(result, minPatternSize));
-
-                // Serialization code
-                try
-                {
-                    FileOutputStream fileOut = new FileOutputStream(filepath + ".storage");
-                    ObjectOutputStream out = new ObjectOutputStream(fileOut);
-                    out.writeObject(result);
-                    out.close();
-                    fileOut.close();
-                }
-                catch (IOException i)
-                {
-                    i.printStackTrace();
-                }
-            }
-
-
-            if (readFromFile) {
-
-                try {
-                    FileInputStream fileIn = new FileInputStream(filepath + ".storage");
-                    ObjectInputStream in = new ObjectInputStream(fileIn);
-                    result = (Storage) in.readObject();
-                    in.close();
-                    fileIn.close();
-                } catch (IOException | ClassNotFoundException ioe) {
-                    ioe.printStackTrace();
-                }
-            }
-
-            if (!readFromFile && !writeToFile) {
-                result.setSubpatterns(ReplaceAllLongestRepeatingPatterns(result, minPatternSize));
-            }
-
-            System.out.println("Finished LRP, moving on");
-
-          //  result.getSubpatterns().add(result);
-
-            // ArrayList<Storage> newPatterns = ReplaceAllLongestRepeatingPatterns(); // what to name this?
-
-            // TODO: modify storage class to store an arraylist containing the longest non-overlapping repeating subpatterns for the pattern.
-            // TODO: use this instead of adding parent pattern to list of patterns when finding longest common substring in order to accurately represent space taken
-            // TODO: when calculating space taken, should iterate over each patterns list as they weren't previously referneced anywhere else and thus mistakenly excluded from the space taken calculation.
-            ReplaceAllLongestCommonPatterns(result, minPatternSize);
-            AfterTheFirstRun(result, minPatternSize);
-
-
-            int count = result.compressedSizeInBytes();
-
-            System.out.println("Before: " + fileLength + ". After: " + count);
-            System.out.println("Reduced to " + ((count / fileLength) * 100) + " percent of original size");
-            System.out.println(result); TODO: end big uncomment */
-
-
-
-
- /* // UNCOMMENT FOR LRC
-            try {
-                for (LyricSegment lyricSegment : stupidSort(l.lyrics)) {
-                    l.writeIntoWAVFiles(lyricSegment);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }*/
-
-            /*System.out.println(Thread.activeCount());
-            System.out.println(Arrays.toString(LongestCommonPattern(segments.get(0).data.get(1), ((MidiSegment) result.getPattern()[1].getData()).data.get(1))));
-        System.out.println(LongestCommonPattern(((MidiSegment) result.getPattern()[0].getData()).data.get(1), ((MidiSegment) result.getPattern()[1].getData()).data.get(1)).length);
-            System.out.println(((MidiSegment) result.getPattern()[1].getData()).data.getFirst().length);*/
-
-
-
-        try {
-
-           var sortedSegments = stupidSort2(segments);
-           var sortedSegments1 = stupidSort2(segments1);
-
-
-
-
-
-
-
-            /*
-
-
-            SegmentContainer container = new SegmentContainer(segments, 0);
-            ArrayList<SegmentContainer> rr = new ArrayList<>();
-            rr.add(container);
-            SliceSegmentsDebug(m, segments, rr);
-            rr.removeFirst();
-            container = new SegmentContainer(segments1, 0);
-            rr.add(container);
-            SliceSegmentsDebug(m, segments1, rr);
-
-
-
-             */
-            /*
-            for (MidiSegment segment : segments) {
-
-                m.writeIntoWAVFiles(segment);
-            }
-            for (MidiSegment segment : segments1) {
-                m.writeIntoWAVFiles(segment);
-            }*/
+            var sortedSegments = stupidSort2(segments);
+            var sortedSegments1 = stupidSort2(segments1);
 
             ArrayList<Integer> reconstruction = new ArrayList<>();
             for (MidiSegment segment : segments) {
@@ -428,16 +150,13 @@ public class Main {
                 segments1.get(i).segmentIndex = stupidIntegers1.get(i);
             }
 
+            SliceSegments(m, segments, sortedSegments); //TODO: EVIL LIVES HERE
+            SliceSegments(m, segments1, sortedSegments1);
 
-
-
-          SliceSegments(m, segments, sortedSegments); //TODO: EVIL LIVES HERE
-          SliceSegments(m, segments1, sortedSegments1);
-
-          if(!segments.getLast().equals(notes)) {
-              MidiSegment toCompare = segments.getLast();
-              System.out.println(toCompare + " " + notes);
-          }
+            if (!segments.getLast().equals(notes)) {
+                MidiSegment toCompare = segments.getLast();
+                System.out.println(toCompare + " " + notes);
+            }
 
             reconstruction.clear();
             for (MidiSegment segment : segments) {
@@ -467,16 +186,15 @@ public class Main {
                 String toWrite = MidiParser.segmentEntry(segment) + "\n";
 
                 myWriter.write(toWrite);
-                //myWriter.write(m.segmentEntry(segments1.get(i)) + "\n");
                 count++;
             }
             myWriter.close();
 
-             map = new File("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + "mapsecondchannel.txt");
+            map = new File("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + "mapsecondchannel.txt");
             myWriter = new FileWriter(map);
 
             for (MidiSegment segment : segments1) {
-                String toWrite = m.segmentEntry(segment) + "\n";
+                String toWrite = MidiParser.segmentEntry(segment) + "\n";
                 myWriter.write(toWrite);
             }
 
@@ -486,22 +204,6 @@ public class Main {
             e.printStackTrace();
 
         }
-
-            //  writeWAV(((MidiSegment) result.getPattern()[0].getData()).data, 44100, "/Users/jacksegil/Downloads/onebomb.wav", 24, 2);
-      // writeWAV(((MidiSegment) result.getPattern()[1].getData()).data, 44100, "/Users/jacksegil/Downloads/twobomb.wav", 24, 2);
-
-
-
-
-
-           /* byte[] resultAsByteArray = result.toByteArray();
-            for (int i = 0; i < killMe.length; i++) {
-                if (resultAsByteArray[i] != killMe[i]) {
-                    System.out.println(resultAsByteArray[i] + " != " + killMe[i] + " at position " + i);
-                }
-            }
-            System.out.println("Verification result " + Arrays.equals(resultAsByteArray, killMe));*/
-
     }
 
     private static void SliceSegments(MidiParser m, ArrayList<MidiSegment> segments, ArrayList<SegmentContainer> sortedSegments) throws Exception {
@@ -515,7 +217,7 @@ public class Main {
             int partNumber = 1;
             while (!instances.isEmpty()) {
                 SegmentContainer firstHalves = new SegmentContainer(container.segments.getFirst(), 0);
-                SegmentContainer secondHalves = new SegmentContainer(container.segments.getFirst(),0);
+                SegmentContainer secondHalves = new SegmentContainer(container.segments.getFirst(), 0);
                 firstHalves.setLengthSplit(partNumber);
                 secondHalves.setLengthSplit(partNumber);
 
@@ -526,14 +228,14 @@ public class Main {
 
                 int length = MidiParser.getSmallestLength(data);
                 for (MidiSegment instance : instances) {
-                    ArrayList<int[]> tempList  = new ArrayList<int[]>();
+                    ArrayList<int[]> tempList = new ArrayList<int[]>();
                     tempList.add(Arrays.copyOfRange(instance.data.getFirst(), 0, length));
                     MidiSegment toAdd = new MidiSegment(instance.duration, instance.notes, tempList, instance.channel, instance.perfSplit, true);
                     toAdd.segmentIndex = instance.segmentIndex;
                     firstHalves.addMidiSegment(toAdd);
 
                     if (length < instance.data.getFirst().length) {
-                        ArrayList<int[]> tempList2  = new ArrayList<int[]>();//TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
+                        ArrayList<int[]> tempList2 = new ArrayList<int[]>();//TODO: KILL TEMPLIST BY GETTING RID OF ARRAYLIST OF INT ARRAYS IN MIDISEGMENT AND JUST STORING THE GODDAMN INT ARRAY
                         tempList2.add(Arrays.copyOfRange(instance.data.getFirst(), length, instance.data.getFirst().length));
                         toAdd = new MidiSegment(instance.duration, instance.notes, tempList2, instance.channel, instance.perfSplit, true);
                         toAdd.segmentIndex = instance.segmentIndex;
@@ -546,7 +248,6 @@ public class Main {
                 if (container.notes.equals("7230753079300")) {
                     System.out.println("f4ee");
                 }
-
 
 
                 for (MidiSegment segment : firstHalves.segments) { //assumes firstHalves is a container containing midisegments compeltely ready for writing (outside of the lengthSplit value, which will be set here) , this loop updates the order refernence segment array for encoding purposees
@@ -589,11 +290,8 @@ public class Main {
                     }
 
 
-
-
                     position++;
                 }
-
 
 
                 instances = secondHalves.segments;
@@ -608,9 +306,8 @@ public class Main {
                 registry.add(output);
 
 
-               m.writeIntoWAVFiles(firstHalves);
+                m.writeIntoWAVFiles(firstHalves);
             }
-
 
 
             iteration++;
@@ -633,7 +330,6 @@ public class Main {
         }
     }
 
-
     public static void writeWAV(ArrayList<int[]> channels, int sampleRate, String outputPath, int bitDepth, int numChannels) throws IOException, InterruptedException {
         AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(channels, bitDepth, numChannels)), new AudioFormat(sampleRate, bitDepth, numChannels, true, false), channels.getFirst().length);
 
@@ -647,12 +343,10 @@ public class Main {
         Files.delete(Paths.get(outputPath));
     }
 
-
-
     public static ArrayList<LyricSegment> stupidSort(ArrayList<LyricSegment> lyrics) {
         ArrayList<LyricSegment> toReturn = new ArrayList<>();
         for (int i = 0; i < lyrics.size(); i++) {
-            LyricSegment currLyric  = lyrics.get(i);
+            LyricSegment currLyric = lyrics.get(i);
             if (toReturn.contains(currLyric)) {
                 toReturn.get(toReturn.indexOf(currLyric)).mergeLyricSegments(currLyric);
             } else {
@@ -698,23 +392,22 @@ public class Main {
         System.out.println("total " + segments.size());
 
 
-
         int limit = 200; //max number of tracks we allow to be written to a single file
         for (int i = 0; i < toReturn.size(); i++) {
             SegmentContainer currContainer = toReturn.get(i);
             int divisor = currContainer.size() / limit; //divisor must be dynamic or i will exprience incredible, incredible pain
-           // int quarter = currContainer.size() / divisor; // change name, not really a quarter
+            // int quarter = currContainer.size() / divisor; // change name, not really a quarter
 
 
             if (currContainer.size() > limit) {
                 int guard = 0;
                 int evilIndex = i;
-                for (int k = 0 ; k < divisor ; k++) {// TODO: standardize numbers, figure out a way to include a part number even if not needed so can reliabiliy know position of each signigifant end digit
+                for (int k = 0; k < divisor; k++) {// TODO: standardize numbers, figure out a way to include a part number even if not needed so can reliabiliy know position of each signigifant end digit
                     SegmentContainer toAdd = new SegmentContainer(new ArrayList<>(currContainer.segments.subList(k * limit, (k + 1) * limit)), k);
                     if (toReturn.contains(toAdd)) {
                         evilIndex = toReturn.indexOf(toAdd);
                         if (evilIndex != i) {
-                            throw new Exception ("aaaaaaaaaaa " + evilIndex);
+                            throw new Exception("aaaaaaaaaaa " + evilIndex);
                         }
                         //toReturn.add(toAdd);
                         guard += toAdd.size();
@@ -734,10 +427,10 @@ public class Main {
                 }
 
                 if (evilIndex != i) {
-                    throw new Exception ("aaaaaaaaaaa " + evilIndex);
+                    throw new Exception("aaaaaaaaaaa " + evilIndex);
                 }
                 if (guard != currContainer.size()) {
-                    throw new Exception ("aaaadaaaaaaa " + guard);
+                    throw new Exception("aaaadaaaaaaa " + guard);
                 }
                 //toReturn.remove(i);
 
@@ -747,7 +440,6 @@ public class Main {
 
         return toReturn;
     }
-
 
     public static void AfterTheFirstRun(Storage pointer, int minPatternSize) {
         ArrayList<Storage> patterns = pointer.getSubpatterns();
@@ -760,19 +452,16 @@ public class Main {
             }
             if (!patterns.get(i).getSubpatterns().isEmpty()) {
                 AfterTheFirstRun(patterns.get(i), minPatternSize);
-            }
-            else { //TODO: very stupid and doesn't even make a difference
+            } else { //TODO: very stupid and doesn't even make a difference
                 //patterns.get(i).setSubpatterns(null);
             }
 
         }
     }
 
-
-
     public static void ReplaceAllLongestCommonPatterns(Storage pointer, int minPatternSize) {
         ArrayList<Storage> patterns = pointer.getSubpatterns();
-       // patterns.add(new Storage (pointer.pattern));
+        // patterns.add(new Storage (pointer.pattern));
         patterns.addFirst(pointer);
 
         Storage curr = LongestCommonPattern(patterns, minPatternSize);
@@ -806,7 +495,7 @@ public class Main {
         int jFinal = 0;
 
         for (int i = 0; i < matches.size(); i++) {
-            for (int j = i + 1; j < matches.size() ; j++) {
+            for (int j = i + 1; j < matches.size(); j++) {
                 Storage commonPattern = LongestCommonPattern(matches.get(i), matches.get(j));
                 if (commonPattern.getPattern().length > longestPattern.getPattern().length) {
                     longestPattern = commonPattern;
@@ -823,38 +512,17 @@ public class Main {
         return longestPattern;
     }
 
-    // can make faster, not through ncr but doing more things in one go
-    /*public static Storage[] LongestCommonPattern(Storage[] matches) {
-        Storage[] longestPattern = new Storage[0];
-
-        for (int i = 0; i < matches.length; i++) {
-            for (int j = i + 1; j < matches.length ; j++) {
-                Storage[] commonPattern = LongestCommonPattern(matches[i].getPattern(), matches[j].getPattern());
-                if (commonPattern.length > longestPattern.length) {
-                    longestPattern = commonPattern;
-                }
-            }
-        }
-
-        return longestPattern;
-    }*/
-
-    public static String LongestCommonSubstring(String S1, String S2)
-    {
+    public static String LongestCommonSubstring(String S1, String S2) {
         int Start = 0;
         int Max = 0;
-        for (int i = 0; i < S1.length(); i++)
-        {
-            for (int j = 0; j < S2.length(); j++)
-            {
+        for (int i = 0; i < S1.length(); i++) {
+            for (int j = 0; j < S2.length(); j++) {
                 int x = 0;
-                while (S1.charAt(i + x) == S2.charAt(j + x))
-                {
+                while (S1.charAt(i + x) == S2.charAt(j + x)) {
                     x++;
                     if (((i + x) >= S1.length()) || ((j + x) >= S2.length())) break;
                 }
-                if (x > Max)
-                {
+                if (x > Max) {
                     Max = x;
                     Start = i;
                 }
@@ -863,22 +531,17 @@ public class Main {
         return S1.substring(Start, (Start + Max));
     }
 
-    public static int[] LongestCommonPattern(int[] S1, int[] S2)
-    {
+    public static int[] LongestCommonPattern(int[] S1, int[] S2) {
         int Start = 0;
         int Max = 0;
-        for (int i = 0; i < S1.length; i++)
-        {
-            for (int j = 0; j < S2.length; j++)
-            {
+        for (int i = 0; i < S1.length; i++) {
+            for (int j = 0; j < S2.length; j++) {
                 int x = 0;
-                while (S1[i + x] == S2[j + x])
-                {
+                while (S1[i + x] == S2[j + x]) {
                     x++;
                     if (((i + x) >= S1.length) || ((j + x) >= S2.length)) break;
                 }
-                if (x > Max)
-                {
+                if (x > Max) {
                     Max = x;
                     Start = i;
                 }
@@ -888,25 +551,20 @@ public class Main {
         return Arrays.copyOfRange(S1, Start, (Start + Max));
     }
 
-    public static Storage LongestCommonPattern(Storage S1, Storage S2)
-    {
+    public static Storage LongestCommonPattern(Storage S1, Storage S2) {
         Storage[] S1p = S1.getPattern();
         Storage[] S2p = S2.getPattern();
 
         int Start = 0;
         int Max = 0;
-        for (int i = 0; i < S1p.length; i++)
-        {
-            for (int j = 0; j < S2p.length; j++)
-            {
+        for (int i = 0; i < S1p.length; i++) {
+            for (int j = 0; j < S2p.length; j++) {
                 int x = 0;
-                while (S1p[i + x].equals(S2p[j + x]))
-                {
+                while (S1p[i + x].equals(S2p[j + x])) {
                     x++;
                     if (((i + x) >= S1p.length) || ((j + x) >= S2p.length)) break;
                 }
-                if (x > Max)
-                {
+                if (x > Max) {
                     Max = x;
                     Start = i;
                 }
@@ -922,10 +580,6 @@ public class Main {
             return new Storage(toReturn);
         }
     }
-
-
-
-
 
     public static ArrayList<Storage> ReplaceAllLongestRepeatingPatternsWithPointers(Storage data, int minPatternSize) {
         ArrayList<Storage> toReturn = new ArrayList<Storage>();
@@ -979,23 +633,15 @@ public class Main {
         //System.out.println("Exited outer while loop");
 
 
-       // System.out.println("Verification result " + Arrays.equals(localResult.toByteArray(), data));
-       // System.out.println(Arrays.toString(localResult.toByteArray()));
+        // System.out.println("Verification result " + Arrays.equals(localResult.toByteArray(), data));
+        // System.out.println(Arrays.toString(localResult.toByteArray()));
         //System.out.println(Arrays.toString(data));
-
 
 
         return toReturn;
     }
 
-
-
-
-
-
-
-    // Returns the longest repeating non-overlapping
-    // substring in str
+    // Returns the longest repeating non-overlapping substring in str
     static String LongestRepeatedSubstring(String str) {
 
         int n = str.length();
@@ -1068,8 +714,7 @@ public class Main {
                         index = Math.max(i, index);
                     }
 
-                }
-                else {
+                } else {
                     LCSRe[i][j] = 0;
                 }
 
@@ -1098,7 +743,7 @@ public class Main {
 
     public static Storage[] LongestRepeatedPatternWithPointers(Storage[] data, int minPatternSize) {
         int n = data.length;
-        byte LCSRe[][] = new byte[n + 1][n + 1];
+        byte[][] LCSRe = new byte[n + 1][n + 1];
 
         Storage[] res = null; // To store result
         int res_length = 0; // To store length of result
@@ -1120,8 +765,7 @@ public class Main {
                         index = Math.max(i, index);
                     }
 
-                }
-                else {
+                } else {
                     LCSRe[i][j] = 0;
                 }
 
@@ -1161,7 +805,7 @@ public class Main {
         for (int i = 0; i < occurrences.size(); i++) {
 
         }
-        
+
         for (int i = 0; i < occurrences.size(); i++) {
             int index = occurrences.get(i);
             int otherDataLength = 0;
@@ -1174,8 +818,7 @@ public class Main {
             } else if (index == 0) { // implied condition of i == 0
                 toReturn[0] = patternPointer;
                 writePos++;
-            }
-            else {
+            } else {
                 int prevIndex = occurrences.get(i - 1);
                 otherDataLength = index - (prevIndex + length);
                 System.arraycopy(data, prevIndex + length, toReturn, writePos, otherDataLength);
@@ -1200,42 +843,26 @@ public class Main {
 
     }
 
-    public int indexOf(byte[] outerArray, byte[] smallerArray) {
-        for(int i = 0; i < outerArray.length - smallerArray.length+1; ++i) {
-            boolean found = true;
-            for(int j = 0; j < smallerArray.length; ++j) {
-                if (outerArray[i+j] != smallerArray[j]) {
-                    found = false;
-                    break;
-                }
-            }
-            if (found) return i;
-        }
-        return -1;
-    }
-
     // need to make this non-overlapping!
     public static ArrayList<Integer> Occurrences(Storage[] outerArray, Storage[] smallerArray) {
         ArrayList<Integer> toReturn = new ArrayList<Integer>();
         int stupidConstant = outerArray.length - smallerArray.length;
-        for(int i = 0; i <= stupidConstant; i++) {
+        for (int i = 0; i <= stupidConstant; i++) {
             boolean found = true;
-            for(int j = 0; j < smallerArray.length; ++j) {
+            for (int j = 0; j < smallerArray.length; ++j) {
                 //maybe replace with fastEquals?
-                if (!outerArray[i+j].equals(smallerArray[j])) {
+                if (!outerArray[i + j].equals(smallerArray[j])) {
                     found = false;
                     break;
                 }
             }
-            if (found){
+            if (found) {
                 toReturn.add(i);
                 i += smallerArray.length - 1;
-            };
+            }
         }
         return toReturn;
     }
-
-
 
     public static String TheProblem(byte[] satan, int numRankings) {
         int n = satan.length;
@@ -1262,7 +889,7 @@ public class Main {
                         res_length = LCSRe[i][j];
                         index = Math.max(i, index);
 
-                       if (res_length > rankings[0][0]) {
+                        if (res_length > rankings[0][0]) {
                             rankings[0][0] = res_length;
                             rankings[0][2] = i;
                             Arrays.sort(rankings, (a, b) -> Integer.compare(a[0], b[0]));
@@ -1273,10 +900,9 @@ public class Main {
                         }
                     }
 
+                } else {
+                    LCSRe[i][j] = 0;
                 }
-                else {
-                        LCSRe[i][j] = 0;
-                    }
 
             }
 
@@ -1333,6 +959,20 @@ public class Main {
         }
 
         return toReturn;
+    }
+
+    public int indexOf(byte[] outerArray, byte[] smallerArray) {
+        for (int i = 0; i < outerArray.length - smallerArray.length + 1; ++i) {
+            boolean found = true;
+            for (int j = 0; j < smallerArray.length; ++j) {
+                if (outerArray[i + j] != smallerArray[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) return i;
+        }
+        return -1;
     }
 
 }

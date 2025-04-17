@@ -2,15 +2,13 @@ import javax.sound.sampled.*;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Decoder {
 
     public ConcurrentHashMap<String, ArrayList<int[]>> map;
-    private String filePath;
+    private final String filePath;
     private int bitDepth;
     private int numChannels;
     private int sampleRate;
@@ -63,9 +61,6 @@ public class Decoder {
         toWrite.add(toIntArray(rightChannel));
 
         //Thread.startVirtualThread(new BasicWavWriterThread(toWrite, "/Users/jacksegil/Desktop/compression/testfiles/output.wav", bitDepth, numChannels, sampleRate));
-
-
-
 
 
         System.out.println(numChannels);
@@ -135,7 +130,7 @@ public class Decoder {
 
     public static ArrayList<int[]> readPCMFromWAV(String file, Decoder decoder) throws IOException {
 
-        if (file.contains("46448196010601160360562170l1p0")){
+        if (file.contains("46448196010601160360562170l1p0")) {
             System.out.println("Reading PCM file: " + file);
         }
 
@@ -156,8 +151,8 @@ public class Decoder {
             numChannels = format.getChannels();
             sampleRate = (int) format.getSampleRate();
 
-           // System.out.println("Bit Depth: " + bitDepth + " bits");
-           // System.out.println("Number of Channels: " + numChannels);
+            // System.out.println("Bit Depth: " + bitDepth + " bits");
+            // System.out.println("Number of Channels: " + numChannels);
             decoder.bitDepth = bitDepth;
             decoder.numChannels = numChannels;
             decoder.sampleRate = sampleRate;

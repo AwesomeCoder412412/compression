@@ -1,8 +1,8 @@
 import java.util.Objects;
 
 public class StupidInteger {
+    private final String nenor;
     private int value;
-    private String nenor;
     public StupidInteger(int value){
         this.value = value;
         nenor= "";

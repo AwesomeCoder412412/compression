@@ -34,8 +34,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
     }
 
 
-
-    public SegmentContainer(MidiSegment segment)  {
+    public SegmentContainer(MidiSegment segment) {
         segments = new ArrayList<>();
         segments.add(segment);
         notes = segment.notes;
@@ -45,7 +44,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         lengthSplit = segment.lengthSplit;
     }
 
-    public SegmentContainer(MidiSegment segment, int empty)  {
+    public SegmentContainer(MidiSegment segment, int empty) {
         segments = new ArrayList<>();
         //segments.add(segment);
         notes = segment.notes;
@@ -55,7 +54,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         lengthSplit = segment.lengthSplit;
     }
 
-    public SegmentContainer(ArrayList<MidiSegment> segments, int perfSplit)  {
+    public SegmentContainer(ArrayList<MidiSegment> segments, int perfSplit) {
         this.segments = segments;
         for (int i = 0; i < segments.size(); i++) {
             segments.get(i).index = i;
@@ -65,7 +64,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
         setPerfSplit(perfSplit);
     }
 
-    public SegmentContainer(ArrayList<MidiSegment> segments, int lengthSplit, boolean stupid)  { //TODO: kill stupid
+    public SegmentContainer(ArrayList<MidiSegment> segments, int lengthSplit, boolean stupid) { //TODO: kill stupid
         this.segments = segments;
         for (int i = 0; i < segments.size(); i++) {
             segments.get(i).index = i;
@@ -116,7 +115,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
     }
 
     @Override
-    public int compareTo(SegmentContainer o){
+    public int compareTo(SegmentContainer o) {
         try {
             throw new Exception("this should never ever ever be used, here in case i need comparable");
         } catch (Exception e) {

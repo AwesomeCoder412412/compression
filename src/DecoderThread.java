@@ -8,7 +8,7 @@ public class DecoderThread implements Runnable {
     ConcurrentHashMap<String, ArrayList<int[]>> map;
     private final String name;
     private final String filePath;
-    private Decoder decoder;
+    private final Decoder decoder;
 
     public DecoderThread(ConcurrentHashMap<String, ArrayList<int[]>> map, String name, String filePath, Decoder decoder) {
         this.map = map;

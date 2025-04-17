@@ -35,7 +35,7 @@ final class MyBT4 {
 
     int readPos = -1;
     private int readLimit = -1;
-    private boolean finishing = false;
+    private final boolean finishing = false;
     private int writePos = 0;
     private int pendingSize = 0;
 

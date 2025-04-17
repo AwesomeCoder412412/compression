@@ -3,10 +3,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class BasicWavWriterThread implements Runnable {
@@ -26,7 +23,6 @@ public class BasicWavWriterThread implements Runnable {
     }
 
 
-
     @Override
     public void run() {
         ThreadManager.threadCounter.incrementAndGet();
@@ -36,8 +32,7 @@ public class BasicWavWriterThread implements Runnable {
             AudioSystem.write(stream, AudioFileFormat.Type.WAVE, fileOut);
             fileOut.close();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         ThreadManager.threadCounter.decrementAndGet();
