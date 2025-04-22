@@ -22,33 +22,22 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        String currFile = "stupid.midi";
+
+
+        String name = "exoplanet";
+        String currMidi = name + ".mid";
+        String currWav =  name + ".wav";
 
         try {
-            boolean encode = false;
+            boolean encode = true;
 
             if (encode) {
-                Encoder("/Users/jacksegil/Desktop/compression/testfiles/" + currFile, false, false, 1);
+                Encoder("/Users/jacksegil/Desktop/compression/testfiles/" + currWav, "/Users/jacksegil/Desktop/compression/testfiles/" + currMidi, name, true);
 
             } else {
 
-                Decoder decoder = new Decoder("/Users/jacksegil/Desktop/compression/testfiles/" + "oneday");
+                Decoder decoder = new Decoder("/Users/jacksegil/Desktop/compression/testfiles/" + name, name);
                 decoder.Decode();
-
-
-                int currValue = ThreadManager.threadCounter.get();
-                while (currValue > 0) {
-                    int temp = ThreadManager.threadCounter.get();
-                    if (temp != currValue) {
-                        System.out.println("We have " + currValue + " threads left");
-                    }
-                    currValue = temp;
-                }
-
-                ConcurrentHashMap<String, ArrayList<int[]>> dd = decoder.map;
-
-                System.out.println("Done!");
-
             }
 
         } catch (Exception e) {
@@ -116,32 +105,18 @@ public class Main {
     }
 
 
-    public static void Encoder(String filepath, boolean readFromFile, boolean writeToFile, int minPatternSize) throws IOException, InvalidMidiDataException, MidiUnavailableException, InterruptedException {
-        File fileData = new File(filepath);
-        FileInputStream inFile = new FileInputStream(filepath);
-        MidiParser m = new MidiParser("/Users/jacksegil/Desktop/compression/testfiles/oneday.wav", 24, 2, 44100, "oneday", false);
-        ArrayList<MidiSegment> segments = m.theStuff("/Users/jacksegil/Downloads/oneday.mid");
+    public static void Encoder(String wavPath, String midiPath, String fileName, boolean processOG) throws IOException, InvalidMidiDataException, MidiUnavailableException, InterruptedException {
+
+        MidiParser m = new MidiParser(wavPath, fileName, processOG);
+        ArrayList<MidiSegment> segments = m.theStuff(midiPath);
         ArrayList<MidiSegment> segments1 = m.segments1;
 
         try {
             var sortedSegments = stupidSort2(segments);
             var sortedSegments1 = stupidSort2(segments1);
 
-            ArrayList<Integer> reconstruction = new ArrayList<>();
-            for (MidiSegment segment : segments) {
-                reconstruction.addAll(Decoder.ToIntArrayList(segment.data.getFirst()));
-            }
-
-            if (!Arrays.equals(MidiParser.pcmData.getFirst(), Decoder.toIntArray(reconstruction))) {
-                System.out.println("f2");
-            }
-
-            MidiSegment notes = segments.getLast();
-
-
             ArrayList<StupidInteger> stupidIntegers = new ArrayList<>();
             ArrayList<StupidInteger> stupidIntegers1 = new ArrayList<>();
-
 
             for (int i = 0; i < segments.size(); i++) {
                 stupidIntegers.add(new StupidInteger(i));
@@ -152,28 +127,12 @@ public class Main {
 
             SliceSegments(m, segments, sortedSegments); //TODO: EVIL LIVES HERE
             SliceSegments(m, segments1, sortedSegments1);
-
-            if (!segments.getLast().equals(notes)) {
-                MidiSegment toCompare = segments.getLast();
-                System.out.println(toCompare + " " + notes);
-            }
-
-            reconstruction.clear();
-            for (MidiSegment segment : segments) {
-                reconstruction.addAll(Decoder.ToIntArrayList(segment.data.getFirst()));
-            }
-
-            if (!Arrays.equals(MidiParser.pcmData.getFirst(), Decoder.toIntArray(reconstruction))) {
-                System.out.println("f2");
-            }
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            File map = new File("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + "mapfirstchannel.txt");
+            File map = new File("/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/mapfirstchannel.txt");
             FileWriter myWriter = new FileWriter(map);
 
             int count = 0;
@@ -190,7 +149,7 @@ public class Main {
             }
             myWriter.close();
 
-            map = new File("/Users/jacksegil/Desktop/compression/testfiles/oneday/" + "mapsecondchannel.txt");
+            map = new File("/Users/jacksegil/Desktop/compression/testfiles/" + fileName  + "/mapsecondchannel.txt");
             myWriter = new FileWriter(map);
 
             for (MidiSegment segment : segments1) {

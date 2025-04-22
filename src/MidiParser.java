@@ -22,10 +22,9 @@ public class MidiParser {
     public ArrayList<String> registry;
     Random rand;
     private int bitDepth;
+    int numChannels;
 
-    public MidiParser(String pcmPath, int bitDepth, int numChannels, int initSampleRate, String fileName, boolean processOG) throws IOException, InterruptedException {
-        this.bitDepth = bitDepth;
-        sampleRate = initSampleRate;
+    public MidiParser(String pcmPath, String fileName, boolean processOG) throws IOException, InterruptedException {
         try {
             FileInputStream inFile = new FileInputStream(pcmPath);
             pcmData = readPCMFromWAV(pcmPath);
@@ -35,6 +34,7 @@ public class MidiParser {
         }
         this.fileName = fileName;
         if (processOG) {
+            System.out.println("Processing into single ALS for comparsion...");
             Main.writeWAV(pcmData, sampleRate, "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + ".wav", bitDepth, numChannels);
         }
         registry = new ArrayList<>();
@@ -205,7 +205,6 @@ public class MidiParser {
 
         byte[] data = new byte[(int) wavFile.length()];
 
-        int numChannels = 0;
 
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(wavFile);

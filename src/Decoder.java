@@ -12,8 +12,9 @@ public class Decoder {
     private int bitDepth;
     private int numChannels;
     private int sampleRate;
+    private String name;
 
-    public Decoder(String filePath) {
+    public Decoder(String filePath, String name) {
         map = new ConcurrentHashMap<>();
         this.filePath = filePath;
     }
@@ -145,7 +146,7 @@ public class Decoder {
 
         System.out.println(numChannels);
         AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(LRCParser.writePCMToByteArray(toWrite, bitDepth, 2)), new AudioFormat(sampleRate, bitDepth, 2, true, false), toWrite.getFirst().length);
-        FileOutputStream fileOut = new FileOutputStream("/Users/jacksegil/Desktop/compression/testfiles/output.wav");
+        FileOutputStream fileOut = new FileOutputStream("/Users/jacksegil/Desktop/compression/testfiles/" + name + "output.wav");
         AudioSystem.write(stream, AudioFileFormat.Type.WAVE, fileOut);
         fileOut.close();
 
