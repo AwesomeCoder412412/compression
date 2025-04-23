@@ -12,6 +12,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+/**
+ * The MidiParser class is a utility for parsing and processing MIDI and PCM audio data.
+ * This class provides methods to handle MIDI files, convert them into relevant data structures,
+ * and manipulate PCM audio data extracted from WAV files in combination with the MIDI data.
+ * This, alongside the Main class, is pretty much just a swiss army knife that's outgrown its
+ * original purpose. Does many things, some of them I use. Does it parse MIDI files? Absolutely.
+ **/
 public class MidiParser {
 
     public static ArrayList<int[]> pcmData;
@@ -50,6 +57,7 @@ public class MidiParser {
         TreeMap<Long, Long> tempoMap = new TreeMap<>(); // Stores tick -> microseconds per quarter note
 
         // Default tempo (120 BPM = 500,000 microseconds per quarter note)
+        // This assumption hasn't messed me up yet, but I'm counting my days
         tempoMap.put(0L, 500000L);
 
         int trackNumber = 0;
@@ -61,8 +69,8 @@ public class MidiParser {
                 MidiEvent event = track.get(i);
                 MidiMessage message = event.getMessage();
 
-                if (message instanceof MetaMessage meta) {
-                    if (meta.getType() == 0x51) { // Set Tempo
+                if (message instanceof MetaMessage meta) { // weird data voodoo from the internet, it works and I don't question it
+                    if (meta.getType() == 0x51) { // set tempo
                         byte[] data = meta.getData();
                         long tempo = ((data[0] & 0xFF) << 16) | ((data[1] & 0xFF) << 8) | (data[2] & 0xFF);
                         tempoMap.put(event.getTick(), tempo);
@@ -99,11 +107,6 @@ public class MidiParser {
                 tableOfContents.add(new String[]{String.valueOf(start), String.valueOf(end), noteData});
             }
         }
-
-        //  Synthesizer synth = MidiSystem.getSynthesizer();
-        // synth.open();
-        // synth.
-
         return tableOfContents;
     }
 
@@ -329,7 +332,7 @@ public class MidiParser {
 
     }
 
-    public void writeIntoWAVFiles(MidiSegment segment) throws IOException, InterruptedException { //for debugging purposes only
+    public void writeIntoWAVFiles(MidiSegment segment) throws IOException, InterruptedException { // for debugging purposes only
         if (!Files.isDirectory(Paths.get("/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "wav/"))) {
             Files.createDirectory(Paths.get("/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "wav/"));
         }

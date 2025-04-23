@@ -1,5 +1,11 @@
 import java.util.Objects;
 
+/**
+ * Functionally, this is just an integer. It used to be useful for purposes of having a counter
+ * that I can pass around as a pointer instead of a primitive. However, now I'm just using it as an int
+ * because I found a better solution to the problem it was made to solve. I keep it around and integrated
+ * because it might be useful one day.
+ */
 public class StupidInteger {
     private final String nenor;
     private int value;

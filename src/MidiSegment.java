@@ -1,6 +1,10 @@
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * Represents a segment of a MIDI file paired with the corresponding WAV channel data, containing information about its duration,
+ * notes, MIDI data, channel, etc.
+ */
 public class MidiSegment implements Comparable<MidiSegment> {
     long duration;
     ArrayList<int[]> data;

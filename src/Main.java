@@ -1,6 +1,5 @@
 import XZ.LZMA2Options;
 import XZ.XZOutputStream;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
@@ -9,11 +8,8 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -138,13 +134,10 @@ public class Main {
             File map = new File("/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/mapfirstchannel.txt");
             FileWriter myWriter = new FileWriter(map);
 
-            int count = 0;
             for (MidiSegment segment : segments) {
 
                 String toWrite = MidiParser.segmentEntry(segment) + "\n";
-
                 myWriter.write(toWrite);
-                count++;
             }
             myWriter.close();
 
@@ -160,7 +153,6 @@ public class Main {
             System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
             e.printStackTrace();
-
         }
     }
 

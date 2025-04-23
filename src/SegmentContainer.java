@@ -1,10 +1,16 @@
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * Represents a container for managing a collection of {@code MidiSegment} objects.
+ * The class provides functionality to group, process, and modify the properties of
+ * MIDI segments collectively. It can be initialized with a single {@code MidiSegment},
+ * or a collection.
+ */
 public class SegmentContainer implements Comparable<SegmentContainer> {
     public ArrayList<MidiSegment> segments;
     String notes;
-    final int channel;
+    int channel;
 
     private int lengthSplit;
     private int perfSplit;
@@ -97,7 +103,7 @@ public class SegmentContainer implements Comparable<SegmentContainer> {
     @Override
     public int compareTo(SegmentContainer o) {
         try {
-            throw new Exception("this should never ever ever be used, here in case i need comparable");
+            throw new Exception("this should never ever ever be used, here in case I need comparable");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
