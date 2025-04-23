@@ -19,6 +19,7 @@ public class MidiParser {
     private final String fileName;
     public ArrayList<MidiSegment> segments;
     public ArrayList<MidiSegment> segments1;
+    public ArrayList<MidiSegment> segmentsMap;
     public ArrayList<String> registry;
     Random rand;
     private int bitDepth;
@@ -184,7 +185,7 @@ public class MidiParser {
     }
 
     public static String segmentEntry(MidiSegment segment) {
-        return segment.notes + "l" + segment.lengthSplit + "p" + segment.perfSplit + "i" + segment.index;
+        return segment.notes + segment.channel + "l" + segment.lengthSplit + "p" + segment.perfSplit + "i" + segment.index;
     }
 
     public static int getSmallestLength(ArrayList<int[]> instances) {
@@ -262,10 +263,10 @@ public class MidiParser {
     }
 
     public ArrayList<MidiSegment> theStuff(String filePath) {
-        ArrayList<Integer> track = new ArrayList<>();
         try {
             segments = new ArrayList<>();
             segments1 = new ArrayList<>();
+            segmentsMap = new ArrayList<>();
             ArrayList<String[]> tableOfContents = parseMidiFile(filePath);
             for (int i = 0; i < tableOfContents.size() - 1; i++) {
                 String[] entry = tableOfContents.get(i);
@@ -278,31 +279,26 @@ public class MidiParser {
                     System.out.println("problem");
                 }
 
-                segments.add(new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2] + 0, getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 0), 0, i)); // i = place
+                MidiSegment toAdd = new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2], getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 0), 0, i);
 
-                track.addAll(Decoder.ToIntArrayList(getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 0).get(0)));
+                segments.add(toAdd); // i = place
+                segmentsMap.add(toAdd);
 
-                segments1.add(new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2] + 1, getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 1), 1, i));
+                toAdd = new MidiSegment((Long.parseLong(nextEntry[0]) - Long.parseLong(entry[0])), entry[2], getDataMono(Long.parseLong(entry[0]), Long.parseLong(nextEntry[0]), 1), 1, i);
+                segments1.add(toAdd);
+                segmentsMap.add(toAdd);
                 System.out.println("Start: " + entry[0] + ", End: " + entry[1] + ", Duration: " + (Long.parseLong(entry[1]) - Long.parseLong(entry[0])) + ", Identifier: " + entry[2]);
             }
             String[] entry = tableOfContents.getLast();
-            segments.add(new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2] + 0, getDataToEndMono(Long.parseLong(entry[0]), 0), 0, tableOfContents.size() - 1));
 
-            track.addAll(Decoder.ToIntArrayList(getDataToEndMono(Long.parseLong(entry[0]), 0).get(0)));
-            if (!Arrays.equals(pcmData.getFirst(), Decoder.toIntArray(track))) {
-                System.out.println("f");
-            }
+            MidiSegment toAdd =new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2], getDataToEndMono(Long.parseLong(entry[0]), 0), 0, tableOfContents.size() - 1);
+            segments.add(toAdd);
+            segmentsMap.add(toAdd);
 
-            ArrayList<Integer> reconstruction = new ArrayList<>();
-            for (MidiSegment segment : segments) {
-                reconstruction.addAll(Decoder.ToIntArrayList(segment.data.getFirst()));
-            }
+            toAdd = new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2], getDataToEndMono(Long.parseLong(entry[0]), 1), 1, tableOfContents.size() - 1);
+            segments1.add(toAdd);
+            segmentsMap.add(toAdd);
 
-            if (!Arrays.equals(pcmData.getFirst(), Decoder.toIntArray(reconstruction))) {
-                System.out.println("f2");
-            }
-
-            segments1.add(new MidiSegment((Long.parseLong(entry[1]) - Long.parseLong(entry[0])), entry[2] + 1, getDataToEndMono(Long.parseLong(entry[0]), 1), 1, tableOfContents.size() - 1));
             System.out.println("Start: " + entry[0] + ", End: " + entry[1] + ", Duration: " + (Long.parseLong(entry[1]) - Long.parseLong(entry[0])) + ", Identifier: " + entry[2]);
 
         } catch (Exception e) {
@@ -316,7 +312,11 @@ public class MidiParser {
             Files.createDirectory(Paths.get("/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/"));
         }
 
-        String outputPath = "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + container.notes + "l" + container.getLengthSplit() + "p" + container.getPerfSplit() + ".wav";
+        if (container.size() == 1) {
+
+        }
+
+        String outputPath = "/Users/jacksegil/Desktop/compression/testfiles/" + fileName + "/" + container.notes + container.channel + "l" + container.getLengthSplit() + "p" + container.getPerfSplit() + ".wav";
         if (outputPath.equals("/Users/jacksegil/Desktop/compression/testfiles/oneday/7230753079300l1p0.wav")) {
             System.out.println("Writing to " + outputPath);
         }
